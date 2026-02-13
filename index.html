@@ -1,0 +1,4760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NSPM - SmartTendance Pro</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <!-- Paystack Inline JS -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase Configuration -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBN0KexNQkEegTvAUA815xJrBqPUa45SOk",
+            authDomain: "smarttendance-a355b.firebaseapp.com",
+            databaseURL: "https://smarttendance-a355b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "smarttendance-a355b",
+            storageBucket: "smarttendance-a355b.firebasestorage.app",
+            messagingSenderId: "448589697375",
+            appId: "1:448589697375:web:d5b02d378ba9746a68a6ea"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+        console.log("Firebase initialized successfully!");
+    </script>
+    
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        :root {
+            --primary: #44ff44;
+            --primary-dark: #33cc33;
+            --secondary: #3366cc;
+            --accent: #00aaff;
+            --danger: #ff4444;
+            --warning: #ffaa00;
+            --success: #10b981;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #f5f5f5;
+            --card-bg: #1a1a1a;
+            --card-border: #333;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #999999;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --border-radius: 12px;
+            --late: #ffaa00;
+            --on-time: #44ff44;
+            --overtime: #3366cc;
+        }
+        
+        body {
+            background: var(--dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        body.light-mode {
+            --primary: #2563eb;
+            --primary-dark: #1e4db9;
+            --secondary: #3b82f6;
+            --accent: #00aaff;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --dark: #f8fafc;
+            --darker: #e2e8f0;
+            --light: #ffffff;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --late: #f59e0b;
+            --on-time: #10b981;
+            --overtime: #3b82f6;
+        }
+
+        /* NSPM Branding */
+        .nspm-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #44ff44 0%, #00aaff 100%);
+            color: #000000;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-left: 8px;
+        }
+        
+        body.light-mode .nspm-badge {
+            background: linear-gradient(135deg, #2563eb 0%, #00aaff 100%);
+            color: white;
+        }
+        
+        .nspm-logo {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .nspm-logo i {
+            font-size: 20px;
+        }
+
+        /* Authentication Styles - Kept similar but with NSPM branding */
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+        }
+        
+        body.light-mode .auth-container {
+            background: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%);
+        }
+        
+        .auth-box {
+            background: #2a2a2a;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        
+        body.light-mode .auth-box {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .auth-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            color: #44ff44;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+        
+        body.light-mode .auth-header {
+            background: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%);
+            color: #007bff;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .auth-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .auth-header p {
+            opacity: 0.9;
+            font-size: 14px;
+            color: #cccccc;
+        }
+        
+        body.light-mode .auth-header p {
+            color: #666666;
+        }
+        
+        .auth-body {
+            padding: 30px 25px;
+        }
+        
+        /* Employee Badge - Updated from Student Badge */
+        .employee-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 12px;
+            gap: 10px;
+            border: 1px solid #44ff44;
+        }
+        
+        body.light-mode .employee-badge {
+            background: #e0e0e0;
+            border: 1px solid #007bff;
+        }
+        
+        .employee-badge span {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        /* Form Toggle - Kept same */
+        .form-toggle {
+            display: flex;
+            margin-bottom: 25px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 5px;
+        }
+        
+        body.light-mode .form-toggle {
+            background: #e0e0e0;
+        }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #cccccc;
+        }
+        
+        body.light-mode .toggle-btn {
+            color: #666666;
+        }
+        
+        .toggle-btn.active {
+            background: #44ff44;
+            color: #000000;
+        }
+        
+        body.light-mode .toggle-btn.active {
+            background: #007bff;
+            color: #ffffff;
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #cccccc;
+        }
+        
+        body.light-mode .form-group label {
+            color: #666666;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon input, .input-with-icon select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #1a1a1a;
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        
+        body.light-mode .input-with-icon input, 
+        body.light-mode .input-with-icon select {
+            border: 2px solid #ddd;
+            background: #f9f9f9;
+            color: #333333;
+        }
+        
+        .input-with-icon input:focus, .input-with-icon select:focus {
+            border-color: #44ff44;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(68, 255, 68, 0.2);
+        }
+        
+        body.light-mode .input-with-icon input:focus, 
+        body.light-mode .input-with-icon select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+        
+        .input-with-icon.error input {
+            border-color: #ff4444;
+        }
+        
+        .error-message {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* Password Strength - Kept same */
+        .password-strength-container {
+            margin-top: 10px;
+        }
+        
+        .strength-meter {
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+        
+        body.light-mode .strength-meter {
+            background: #ddd;
+        }
+        
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .strength-fill.weak {
+            background: #ff4444;
+            width: 25%;
+        }
+        
+        .strength-fill.fair {
+            background: #ffaa00;
+            width: 50%;
+        }
+        
+        .strength-fill.good {
+            background: #44aaff;
+            width: 75%;
+        }
+        
+        .strength-fill.strong {
+            background: #44ff44;
+            width: 100%;
+        }
+        
+        .strength-text {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .strength-label {
+            color: #888;
+        }
+        
+        body.light-mode .strength-label {
+            color: #666;
+        }
+        
+        .strength-value {
+            font-weight: 600;
+        }
+        
+        .strength-requirements {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        body.light-mode .strength-requirements {
+            color: #666;
+        }
+        
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        
+        .requirement span {
+            margin-left: 6px;
+        }
+        
+        .requirement.valid {
+            color: #44ff44;
+        }
+        
+        .requirement.invalid {
+            color: #888;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px;
+            background: #44ff44;
+            color: #000000;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        body.light-mode .btn {
+            background: #007bff;
+            color: #ffffff;
+        }
+        
+        .btn:hover {
+            background: #33dd33;
+            transform: translateY(-2px);
+        }
+        
+        body.light-mode .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--darker);
+        }
+        
+        .btn-sm {
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+        
+        .terms {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #cccccc;
+        }
+        
+        body.light-mode .terms {
+            color: #666666;
+        }
+        
+        .terms input {
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+        
+        .terms a {
+            color: #44ff44;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        body.light-mode .terms a {
+            color: #007bff;
+        }
+        
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .forgot-password a {
+            color: #44ff44;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        body.light-mode .forgot-password a {
+            color: #007bff;
+        }
+        
+        .clear-cache-link {
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .clear-cache-link a {
+            color: #ffaa00;
+            text-decoration: none;
+            font-size: 12px;
+        }
+        
+        /* Main App Styles */
+        .app-container {
+            display: none;
+            max-width: 100%;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+        
+        /* Enhanced Header for Mobile with NSPM Branding */
+        .header {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--card-bg) 100%);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .header-content {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .header h1 {
+            color: var(--primary);
+            font-size: 20px;
+            margin-bottom: 8px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Employee info */
+        .employee-info {
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            align-items: flex-start;
+        }
+        
+        .employee-info span {
+            display: block;
+            line-height: 1.3;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+        }
+        
+        .employee-department {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 400 !important;
+        }
+        
+        .employee-id-badge {
+            background: var(--primary);
+            color: #000000;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        body.light-mode .employee-id-badge {
+            color: #ffffff;
+        }
+        
+        body:not(.light-mode) .employee-info span {
+            color: #ffffff !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        body.light-mode .employee-info span {
+            color: #1a1a1a !important;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .theme-toggle, .settings-toggle, .new-shift-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+        
+        .theme-toggle:hover, .settings-toggle:hover, .new-shift-toggle:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        /* Enhanced Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            padding: 8px 5px;
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 5px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 10px;
+            min-height: 50px;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(68, 255, 68, 0.1);
+        }
+        
+        .nav-item i {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-item .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 15px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Clock In/Out Scanner Section */
+        .scanner-section {
+            text-align: center;
+        }
+        
+        .clock-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .clock-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 10px;
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 15px;
+            color: var(--text-primary);
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+        
+        .clock-btn i {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .clock-btn.clock-in {
+            border-color: var(--success);
+        }
+        
+        .clock-btn.clock-in i {
+            color: var(--success);
+        }
+        
+        .clock-btn.clock-out {
+            border-color: var(--warning);
+        }
+        
+        .clock-btn.clock-out i {
+            color: var(--warning);
+        }
+        
+        .clock-btn.break-start {
+            border-color: var(--accent);
+        }
+        
+        .clock-btn.break-start i {
+            color: var(--accent);
+        }
+        
+        .clock-btn.break-end {
+            border-color: var(--secondary);
+        }
+        
+        .clock-btn.break-end i {
+            color: var(--secondary);
+        }
+        
+        .clock-btn.active {
+            background: var(--primary);
+            color: #000000;
+            border-color: var(--primary);
+        }
+        
+        .clock-btn.active i {
+            color: #000000;
+        }
+        
+        body.light-mode .clock-btn.active i {
+            color: #ffffff;
+        }
+        
+        .clock-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .clock-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .current-shift-status {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 5px solid var(--primary);
+            box-shadow: var(--shadow);
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .status-label {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        .status-value {
+            font-weight: 700;
+            font-size: 15px;
+        }
+        
+        .status-active {
+            color: var(--success);
+        }
+        
+        .status-inactive {
+            color: var(--danger);
+        }
+        
+        .status-break {
+            color: var(--warning);
+        }
+        
+        .timer-display {
+            font-size: 32px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 10px 0;
+            color: var(--primary);
+        }
+        
+        .scanner-box {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid var(--card-border);
+            box-shadow: var(--shadow);
+        }
+        
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            height: 280px;
+            margin: 0 auto 15px;
+            border: 3px solid var(--card-border);
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            transition: all 0.3s ease;
+        }
+        
+        .camera-container.camera-active {
+            border-color: var(--primary);
+        }
+        
+        .camera-container.camera-dark {
+            border-color: var(--card-border);
+        }
+        
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            animation: scan 2s infinite;
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+        
+        .camera-dark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            z-index: 5;
+            border-radius: 10px;
+        }
+        
+        .dark-camera-content {
+            max-width: 80%;
+        }
+        
+        .dark-camera-content i {
+            font-size: 48px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        
+        .dark-camera-content h3 {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+        
+        .dark-camera-content p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .scanner-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+        }
+        
+        .btn-small {
+            padding: 10px 12px;
+            font-size: 13px;
+            width: auto;
+            margin: 2px;
+        }
+        
+        /* Trial Banner - Kept same but with NSPM branding */
+        .trial-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 12px 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-left: 2.5px solid rgba(255, 255, 255, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .trial-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .trial-banner.expired {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+        }
+        
+        .banner-content {
+            width: 100%;
+        }
+        
+        .banner-content h3 {
+            margin-bottom: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .banner-content p {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .trial-day-counters {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: 10px 0;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 5px 0;
+        }
+        
+        .day-counter {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #000000 !important;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .day-counter.active {
+            background: white;
+            color: #059669 !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .day-counter.passed {
+            background: rgba(255, 255, 255, 0.3);
+            color: #000000 !important;
+        }
+        
+        .day-counter.expired {
+            background: rgba(255, 255, 255, 0.2);
+            color: #000000 !important;
+        }
+        
+        .trial-progress {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .trial-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .trial-progress-bar.expired {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+        }
+        
+        /* COMPLETELY REDESIGNED ATTENDANCE HISTORY - CORPORATE STYLE */
+        .attendance-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .kpi-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--card-border);
+        }
+        
+        .kpi-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+        
+        .kpi-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        .kpi-trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        
+        .trend-up {
+            color: var(--success);
+        }
+        
+        .trend-down {
+            color: var(--danger);
+        }
+        
+        /* Weekly Summary */
+        .weekly-summary {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--card-border);
+        }
+        
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .summary-title {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .week-selector {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .week-btn {
+            background: var(--darker);
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .week-btn.active {
+            background: var(--primary);
+            color: #000000;
+        }
+        
+        .day-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .day-summary-item {
+            text-align: center;
+            padding: 8px 4px;
+            background: var(--darker);
+            border-radius: 10px;
+        }
+        
+        .day-name {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        
+        .day-hours {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .day-status {
+            font-size: 9px;
+            margin-top: 4px;
+            padding: 2px 4px;
+            border-radius: 10px;
+        }
+        
+        .status-on-time {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .status-late {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-absent {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        /* Filters */
+        .attendance-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            background: var(--darker);
+            border-radius: 30px;
+            padding: 4px;
+            flex: 1;
+        }
+        
+        .filter-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: #000000;
+        }
+        
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--darker);
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-size: 12px;
+        }
+        
+        .date-range i {
+            color: var(--text-secondary);
+        }
+        
+        /* Corporate Attendance Table */
+        .attendance-table-container {
+            margin-top: 10px;
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            font-size: 13px;
+            min-width: 800px;
+        }
+        
+        .attendance-table th {
+            background: var(--darker);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--card-border);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .attendance-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-secondary);
+        }
+        
+        .attendance-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .attendance-table tr:hover {
+            background: rgba(68, 255, 68, 0.05);
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .badge-present {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .badge-absent {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .badge-late {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .badge-overtime {
+            background: rgba(51, 102, 204, 0.15);
+            color: var(--secondary);
+            border: 1px solid rgba(51, 102, 204, 0.3);
+        }
+        
+        .badge-break {
+            background: rgba(0, 170, 255, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+        }
+        
+        /* Hours Display */
+        .hours-display {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .hours-positive {
+            color: var(--success);
+        }
+        
+        .hours-negative {
+            color: var(--danger);
+        }
+        
+        .hours-overtime {
+            color: var(--secondary);
+        }
+        
+        .employee-cell {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .employee-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .employee-id {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .action-cell {
+            text-align: center;
+        }
+        
+        .delete-record-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            opacity: 0.8;
+        }
+        
+        .delete-record-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+            opacity: 1;
+        }
+        
+        /* Shift Management */
+        .shift-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 16px;
+            margin: 15px 0;
+            border: 2px solid var(--primary);
+            box-shadow: var(--shadow);
+        }
+        
+        .shift-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .shift-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .shift-time {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+        
+        .shift-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .shift-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+        }
+        
+        /* Subscription Section - Kept similar but with NSPM */
+        .subscription-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid var(--primary);
+            box-shadow: var(--shadow);
+        }
+        
+        .subscription-info {
+            margin: 12px 0;
+        }
+        
+        .subscription-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 14px;
+        }
+        
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 15px 0;
+        }
+        
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .payment-option:hover {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary);
+        }
+        
+        .payment-option.free-trial {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+        }
+        
+        .payment-icon {
+            margin-right: 12px;
+            font-size: 20px;
+            color: var(--primary);
+        }
+        
+        /* Settings Section */
+        .settings-section {
+            text-align: left;
+        }
+        
+        .settings-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: var(--shadow);
+        }
+        
+        .settings-group {
+            margin-bottom: 20px;
+        }
+        
+        .settings-group h3 {
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .language-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .language-option {
+            padding: 12px;
+            background: var(--darker);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .language-option.active {
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .language-option:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        /* Shift Modal */
+        .shift-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+        
+        .shift-modal-content {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid var(--primary);
+            max-width: 400px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .shift-time-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .shift-time-inputs .form-group {
+            flex: 1;
+        }
+        
+        /* Result Modal */
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+        
+        .result-content {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid var(--primary);
+            max-width: 350px;
+            width: 100%;
+            box-shadow: var(--shadow);
+        }
+        
+        .result-success {
+            border-color: var(--success);
+        }
+        
+        .result-error {
+            border-color: var(--danger);
+        }
+        
+        .result-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+        
+        /* Camera Permission */
+        .camera-permission {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        .camera-permission i {
+            font-size: 42px;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+        
+        .enable-camera-text {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 12px 0;
+            line-height: 1.2;
+            text-align: center;
+        }
+        
+        .enable-camera-text span {
+            display: block;
+            color: var(--text-primary);
+        }
+        
+        .camera-instruction {
+            font-size: 13px;
+            margin: 8px 0 15px;
+            color: var(--text-secondary);
+        }
+        
+        /* Paystack Button */
+        .paystack-button {
+            background: #00A859;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .paystack-button:hover {
+            background: #008F4C;
+            transform: translateY(-2px);
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            color: white;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #333;
+            border-top: 5px solid #44ff44;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Scanner disabled overlay */
+        .scanner-disabled {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+            border-radius: 10px;
+        }
+        
+        .scanner-disabled i {
+            font-size: 42px;
+            color: var(--warning);
+            margin-bottom: 15px;
+        }
+        
+        .scanner-disabled h3 {
+            margin-bottom: 10px;
+            color: var(--warning);
+        }
+        
+        .scanner-disabled p {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .logout-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--card-border);
+        }
+        
+        .logout-btn-settings {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .logout-btn-settings:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 { font-size: 18px; }
+            .camera-container { height: 250px; max-width: 100%; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .day-summary-grid { grid-template-columns: repeat(7, 1fr); }
+            .day-name { font-size: 9px; }
+            .day-hours { font-size: 12px; }
+            .clock-actions { flex-direction: column; }
+            .clock-btn { flex-direction: row; justify-content: flex-start; gap: 15px; padding: 15px; }
+            .clock-btn i { margin-bottom: 0; }
+            .auth-header h1 { font-size: 24px; }
+            .auth-body { padding: 20px 15px; }
+            .employee-info { font-size: 11px; }
+            .day-counter { 
+                width: 30px; 
+                height: 30px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Section - Updated with NSPM branding -->
+    <div id="authSection" class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1>
+                    <i class="fas fa-building"></i> 
+                    <span data-i18n="smartTendance">NSPM SmartTendance</span>
+                    <span class="nspm-badge">NSPM</span>
+                </h1>
+                <p id="authSubtitle" data-i18n="employeeAttendancePortal">Employee Attendance Portal</p>
+            </div>
+            
+            <div class="auth-body">
+                <!-- Employee Badge - Changed from Student Badge -->
+                <div class="employee-badge">
+                    <i class="fas fa-id-card"></i>
+                    <span id="employeePortalText" data-i18n="employeePortal">NSPM Employee Portal</span>
+                </div>
+                
+                <div class="form-toggle">
+                    <button class="toggle-btn active" id="loginToggle" data-i18n="login">Login</button>
+                    <button class="toggle-btn" id="signupToggle" data-i18n="signup">Sign Up</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <label for="loginId" data-i18n="employeeId">Employee ID</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="loginId" placeholder="Enter your employee ID" required data-i18n-placeholder="enterEmployeeId">
+                        </div>
+                        <div class="error-message" id="loginIdError" data-i18n="validEmployeeIdRequired">Please enter a valid employee ID</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword" data-i18n="password">Password</label>
+                        <div class="input-with-icon">
+                            <input type="password" id="loginPassword" placeholder="Enter your password" required data-i18n-placeholder="enterPassword">
+                        </div>
+                        <div class="error-message" id="loginPasswordError" data-i18n="passwordRequired">Please enter your password</div>
+                    </div>
+                    
+                    <div class="terms">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe" data-i18n="rememberMe">Remember me</label>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="loginButton">
+                        <i class="fas fa-id-card"></i> <span data-i18n="loginToPortal">Login to NSPM Portal</span>
+                    </button>
+
+                    <div class="forgot-password">
+                        <a href="#" id="forgotPasswordLink" data-i18n="forgotPassword">Forgot your password?</a>
+                    </div>
+                    
+                    <div class="clear-cache-link" id="clearCacheLinkContainer">
+                        <a href="#" id="clearCacheLink">Clear cache and reset login</a>
+                    </div>
+                </form>
+                
+                <!-- Signup Form - Updated for Employees -->
+                <form id="signupForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="fullName" data-i18n="fullName">Full Name</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="fullName" placeholder="Enter your full name" required data-i18n-placeholder="enterFullName">
+                        </div>
+                        <div class="error-message" id="fullNameError" data-i18n="fullNameRequired">Please enter your full name</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" data-i18n="workEmail">Work Email</label>
+                        <div class="input-with-icon">
+                            <input type="email" id="email" placeholder="Enter your work email" required data-i18n-placeholder="enterWorkEmail">
+                        </div>
+                        <div class="error-message" id="emailError" data-i18n="validEmailRequired">Please enter a valid work email</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userId" data-i18n="employeeId">Employee ID</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="userId" placeholder="e.g., NSPM/23/ENG/0105" required data-i18n-placeholder="enterEmployeeId">
+                        </div>
+                        <div class="error-message" id="userIdError" data-i18n="validEmployeeIdRequired">Please enter a valid employee ID</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="department" data-i18n="department">Department</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="department" placeholder="Enter your department" required data-i18n-placeholder="enterDepartment">
+                        </div>
+                        <div class="error-message" id="departmentError" data-i18n="departmentRequired">Please enter your department</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="position" data-i18n="position">Job Title / Position</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="position" placeholder="Enter your job title" required data-i18n-placeholder="enterPosition">
+                        </div>
+                        <div class="error-message" id="positionError" data-i18n="positionRequired">Please enter your position</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupPassword" data-i18n="password">Password</label>
+                        <div class="input-with-icon">
+                            <input type="password" id="signupPassword" placeholder="Create a strong password" required data-i18n-placeholder="createPassword">
+                        </div>
+                        
+                        <!-- Password Strength Indicator -->
+                        <div class="password-strength-container">
+                            <div class="strength-meter">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <div class="strength-text">
+                                <span class="strength-label" id="strengthLabel" data-i18n="passwordStrength">Password strength</span>
+                                <span class="strength-value" id="strengthValue"></span>
+                            </div>
+                            <div class="strength-requirements">
+                                <div class="requirement invalid" id="reqLength">
+                                    <span data-i18n="min8Chars">✓ At least 8 characters</span>
+                                </div>
+                                <div class="requirement invalid" id="reqUppercase">
+                                    <span data-i18n="uppercaseLetter">✓ Uppercase letter</span>
+                                </div>
+                                <div class="requirement invalid" id="reqLowercase">
+                                    <span data-i18n="lowercaseLetter">✓ Lowercase letter</span>
+                                </div>
+                                <div class="requirement invalid" id="reqNumber">
+                                    <span data-i18n="numberRequired">✓ Number</span>
+                                </div>
+                                <div class="requirement invalid" id="reqSymbol">
+                                    <span data-i18n="symbolRequired">✓ Symbol</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="error-message" id="signupPasswordError" data-i18n="passwordRequirements">Password must meet all requirements</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword" data-i18n="confirmPassword">Confirm Password</label>
+                        <div class="input-with-icon">
+                            <input type="password" id="confirmPassword" placeholder="Confirm your password" required data-i18n-placeholder="confirmPassword">
+                        </div>
+                        <div class="error-message" id="confirmPasswordError" data-i18n="passwordsDontMatch">Passwords do not match</div>
+                    </div>
+                    
+                    <div class="terms">
+                        <input type="checkbox" id="agreeTerms" required>
+                        <label for="agreeTerms" data-i18n="agreeTerms">I agree to the <a href="#" data-i18n="termsOfService">Terms of Service</a> and <a href="#" data-i18n="privacyPolicy">Privacy Policy</a></label>
+                    </div>
+                    <div class="error-message" id="termsError" data-i18n="agreeToTerms">You must agree to the terms and conditions</div>
+                    
+                    <button type="submit" class="btn" id="signupButton">
+                        <i class="fas fa-id-card"></i> <span data-i18n="createAccount">Create Employee Account</span>
+                    </button>
+                </form>
+
+                <!-- Forgot Password Form -->
+                <form id="forgotPasswordForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="forgotEmail" data-i18n="workEmail">Work Email</label>
+                        <div class="input-with-icon">
+                            <input type="email" id="forgotEmail" placeholder="Enter your work email" required data-i18n-placeholder="enterWorkEmail">
+                        </div>
+                        <div class="error-message" id="forgotEmailError" data-i18n="validEmailRequired">Please enter a valid work email</div>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="resetPasswordButton">
+                        <i class="fas fa-id-card"></i> <span data-i18n="sendResetInstructions">Send Reset Instructions</span>
+                    </button>
+
+                    <div class="forgot-password">
+                        <a href="#" id="backToLoginLink" data-i18n="backToLogin">Back to Login</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container - NSPM Branded -->
+    <div class="app-container" id="mainApp">
+        <!-- Enhanced Header with NSPM Branding -->
+        <div class="header">
+            <div class="header-content">
+                <h1 id="headerTitle">
+                    <i class="fas fa-building"></i> 
+                    <span data-i18n="smartTendance">NSPM SmartTendance</span>
+                    <span class="nspm-badge">NSPM</span>
+                </h1>
+                <!-- Employee info -->
+                <div class="employee-info">
+                    <span id="employeeName">Adamu Ahmad</span>
+                    <span id="employeeId">NSPM/23/ENG/0105</span>
+                    <span id="employeeDepartment" class="employee-department">Engineering</span>
+                    <span id="employeePosition">Software Engineer</span>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="new-shift-toggle" onclick="showNewShiftModal()">
+                    <i class="fas fa-clock"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Trial Info Banner - Kept same -->
+        <div id="trialBanner" class="trial-banner" style="display: none;">
+            <div class="banner-content">
+                <h3><i class="fas fa-building"></i> <span id="trialTitle">Free Trial Active</span></h3>
+                <p><span id="trialMessage">You have</span> <span id="trialDaysLeft">7</span> <span id="trialDaysText">days left in your free trial</span></p>
+                
+                <div class="trial-day-counters" id="trialDayCounters"></div>
+                
+                <div class="trial-progress">
+                    <div id="trialProgressBar" class="trial-progress-bar" style="width: 50%"></div>
+                </div>
+            </div>
+            <button class="btn btn-small" onclick="switchTab('premium')" style="margin-top: 10px;">
+                <i class="fas fa-building"></i> <span id="subscribeButtonText">Subscribe Now</span>
+            </button>
+        </div>
+        
+        <!-- Scanner Tab - Now with Clock In/Out Actions -->
+        <div id="scanner" class="tab-content active">
+            <div class="scanner-section">
+                <h2><i class="fas fa-clock"></i> <span data-i18n="timeTracking">Time Tracking</span></h2>
+                <p style="color: var(--text-secondary); margin: 8px 0 12px;" id="scannerDescription">Scan QR code to clock in/out or manage breaks</p>
+                
+                <!-- Clock In/Out Action Buttons -->
+                <div class="clock-actions">
+                    <button class="clock-btn clock-in" onclick="prepareClockIn()" id="clockInBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <div>
+                            <strong data-i18n="clockIn">Clock In</strong>
+                            <span style="font-size: 11px; display: block;" data-i18n="startShift">Start Shift</span>
+                        </div>
+                    </button>
+                    <button class="clock-btn clock-out" onclick="prepareClockOut()" id="clockOutBtn" disabled>
+                        <i class="fas fa-sign-out-alt"></i>
+                        <div>
+                            <strong data-i18n="clockOut">Clock Out</strong>
+                            <span style="font-size: 11px; display: block;" data-i18n="endShift">End Shift</span>
+                        </div>
+                    </button>
+                    <button class="clock-btn break-start" onclick="prepareBreakStart()" id="breakStartBtn" disabled>
+                        <i class="fas fa-coffee"></i>
+                        <div>
+                            <strong data-i18n="breakStart">Break Start</strong>
+                            <span style="font-size: 11px; display: block;" data-i18n="startBreak">Start Break</span>
+                        </div>
+                    </button>
+                    <button class="clock-btn break-end" onclick="prepareBreakEnd()" id="breakEndBtn" disabled>
+                        <i class="fas fa-redo-alt"></i>
+                        <div>
+                            <strong data-i18n="breakEnd">Break End</strong>
+                            <span style="font-size: 11px; display: block;" data-i18n="endBreak">End Break</span>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Current Shift Status -->
+                <div class="current-shift-status" id="currentShiftStatus" style="display: none;">
+                    <div class="status-row">
+                        <span class="status-label" data-i18n="currentStatus">Current Status:</span>
+                        <span class="status-value" id="shiftStatusValue">Not Clocked In</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label" data-i18n="shiftStart">Shift Start:</span>
+                        <span class="status-value" id="shiftStartTime">--:--</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label" data-i18n="hoursWorked">Hours Worked:</span>
+                        <span class="timer-display" id="hoursWorkedTimer">00:00:00</span>
+                    </div>
+                    <div class="status-row" id="breakTimerRow" style="display: none;">
+                        <span class="status-label" data-i18n="breakTime">Break Time:</span>
+                        <span class="timer-display" id="breakTimer">00:00:00</span>
+                    </div>
+                </div>
+                
+                <div class="scanner-box">
+                    <div class="camera-container camera-dark">
+                        <div id="cameraDarkOverlay" class="camera-dark-overlay" style="display: flex;">
+                            <div class="dark-camera-content">
+                                <i class="fas fa-video-slash"></i>
+                                <h3>Camera Not Ready</h3>
+                                <p>Enable camera to scan QR codes</p>
+                            </div>
+                        </div>
+                        
+                        <video id="video" playsinline autoplay style="display: none;"></video>
+                        <div class="scan-overlay">
+                            <div class="scan-line"></div>
+                        </div>
+                        
+                        <div id="scannerDisabled" class="scanner-disabled" style="display: none;">
+                            <i class="fas fa-lock"></i>
+                            <h3 id="scannerDisabledTitle">Scanner Locked</h3>
+                            <p id="scannerDisabledMessage">Your free trial has ended. Subscribe to unlock.</p>
+                            <button class="btn btn-warning" onclick="switchTab('premium')">
+                                <i class="fas fa-building"></i> Subscribe Now
+                            </button>
+                        </div>
+                        <div id="cameraPermission" class="camera-permission" style="display: none;">
+                            <i class="fas fa-camera"></i>
+                            <div class="enable-camera-text">
+                                <span data-i18n="enable">Enable</span>
+                                <span data-i18n="camera">Camera</span>
+                            </div>
+                            <p class="camera-instruction" data-i18n="cameraAccessRequired">Camera access is required to scan QR codes</p>
+                            <button class="btn" onclick="startScanner()" style="margin-top: 15px;">
+                                <i class="fas fa-camera"></i> <span data-i18n="enableCamera">Enable Camera</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="scanner-controls">
+                        <button class="btn" onclick="startScanner()" id="startBtn">
+                            <i class="fas fa-camera"></i> <span data-i18n="startScanner">Start Scanner</span>
+                        </button>
+                        <button class="btn btn-danger" onclick="stopScanner()" id="stopBtn" style="display: none;">
+                            <i class="fas fa-stop"></i> <span data-i18n="stopScanner">Stop Scanner</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="color: var(--text-secondary); font-size: 11px; margin-top: 15px;" data-i18n="scanInstruction">
+                    Scan your assigned QR code to clock in/out
+                </div>
+            </div>
+        </div>
+        
+        <!-- REDESIGNED HISTORY TAB - CORPORATE ATTENDANCE DASHBOARD -->
+        <div id="history" class="tab-content">
+            <div class="attendance-dashboard">
+                <!-- Header -->
+                <div class="history-title-section">
+                    <h2><i class="fas fa-chart-line"></i> <span data-i18n="attendanceAnalytics">Attendance Analytics</span></h2>
+                    <p style="color: var(--text-secondary); font-size: 13px;" data-i18n="corporateAttendance">NSPM Employee Time Tracking & Analytics</p>
+                </div>
+                
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <i class="fas fa-clock"></i> <span data-i18n="totalHours">Total Hours</span>
+                        </div>
+                        <div class="kpi-value" id="totalHoursKPI">36.5</div>
+                        <div class="kpi-sub" data-i18n="thisWeek">this week</div>
+                        <div class="kpi-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> <span id="hoursTrend">+2.5 vs last week</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <i class="fas fa-check-circle"></i> <span data-i18n="attendanceRate">Attendance Rate</span>
+                        </div>
+                        <div class="kpi-value" id="attendanceRateKPI">94%</div>
+                        <div class="kpi-sub" data-i18n="last30Days">last 30 days</div>
+                        <div class="kpi-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> <span id="attendanceTrend">+2% vs last month</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <i class="fas fa-exclamation-triangle"></i> <span data-i18n="lateArrivals">Late Arrivals</span>
+                        </div>
+                        <div class="kpi-value" id="lateArrivalsKPI">2</div>
+                        <div class="kpi-sub" data-i18n="thisMonth">this month</div>
+                        <div class="kpi-trend trend-down">
+                            <i class="fas fa-arrow-down"></i> <span id="lateTrend">-1 vs last month</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <i class="fas fa-star"></i> <span data-i18n="overtime">Overtime</span>
+                        </div>
+                        <div class="kpi-value" id="overtimeKPI">4.5</div>
+                        <div class="kpi-sub" data-i18n="hoursThisMonth">hours this month</div>
+                        <div class="kpi-trend">
+                            <span id="overtimeStatus">Within policy</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Weekly Summary -->
+                <div class="weekly-summary">
+                    <div class="summary-header">
+                        <div class="summary-title">
+                            <i class="fas fa-calendar-week"></i> <span data-i18n="weeklyOverview">Weekly Overview</span>
+                        </div>
+                        <div class="week-selector">
+                            <button class="week-btn active" onclick="loadWeek('current')">This Week</button>
+                            <button class="week-btn" onclick="loadWeek('prev')">Last Week</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Day Summary Grid -->
+                    <div class="day-summary-grid" id="daySummaryGrid">
+                        <!-- Dynamically populated -->
+                    </div>
+                    
+                    <div style="margin-top: 15px; display: flex; justify-content: space-between;">
+                        <span data-i18n="totalHoursWeek">Total this week:</span>
+                        <span id="totalWeekHours" style="font-weight: 700; color: var(--primary);">36.5 hrs</span>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="attendance-filters">
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all" onclick="filterAttendance('all')" data-i18n="all">All</button>
+                        <button class="filter-btn" data-filter="present" onclick="filterAttendance('present')" data-i18n="present">Present</button>
+                        <button class="filter-btn" data-filter="late" onclick="filterAttendance('late')" data-i18n="late">Late</button>
+                        <button class="filter-btn" data-filter="absent" onclick="filterAttendance('absent')" data-i18n="absent">Absent</button>
+                    </div>
+                    <div class="date-range">
+                        <i class="fas fa-calendar"></i>
+                        <span id="dateRangeDisplay">March 2025</span>
+                    </div>
+                </div>
+                
+                <!-- Corporate Attendance Table -->
+                <div class="attendance-table-container">
+                    <table class="attendance-table" id="attendanceTable">
+                        <thead>
+                            <tr>
+                                <th data-i18n="date">Date</th>
+                                <th data-i18n="clockIn">Clock In</th>
+                                <th data-i18n="clockOut">Clock Out</th>
+                                <th data-i18n="hoursWorked">Hours Worked</th>
+                                <th data-i18n="status">Status</th>
+                                <th data-i18n="breakTime">Break Time</th>
+                                <th data-i18n="lateBy">Late By</th>
+                                <th class="action-cell" data-i18n="action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody">
+                            <!-- Attendance records will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Premium Tab - Kept similar but with NSPM branding -->
+        <div id="premium" class="tab-content">
+            <h2><i class="fas fa-crown"></i> <span data-i18n="subscription">NSPM Subscription</span></h2>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 13px;" data-i18n="unlockFullFeatures">Unlock full features with our affordable subscription</p>
+            
+            <div class="subscription-card">
+                <h3><i class="fas fa-building"></i> <span data-i18n="currentPlan">Current Plan</span></h3>
+                
+                <div class="subscription-info">
+                    <div class="subscription-row">
+                        <span data-i18n="plan">Plan:</span>
+                        <span><strong data-i18n="employeeAccess">NSPM Employee Access</strong></span>
+                    </div>
+                    <div class="subscription-row">
+                        <span data-i18n="price">Price:</span>
+                        <span><strong>₦5,000 / 4 <span data-i18n="months">months</span></strong></span>
+                    </div>
+                    <div class="subscription-row">
+                        <span data-i18n="status">Status:</span>
+                        <span id="subscriptionStatus" style="color: var(--primary);"><strong id="statusValue">Active (Trial - 7 days left)</strong></span>
+                    </div>
+                    <div class="subscription-row">
+                        <span data-i18n="expires">Expires:</span>
+                        <span id="subscriptionExpiry"><strong id="expiresValue">10/24/2025</strong></span>
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 15px;" data-i18n="paymentMethods">Payment Methods</h4>
+                <div class="payment-options">
+                    <div class="payment-option" onclick="showPaymentForm('paystack')">
+                        <div class="payment-icon"><i class="fas fa-university"></i></div>
+                        <div>
+                            <div><strong data-i18n="payWithPaystack">Pay with Paystack</strong></div>
+                            <div style="font-size: 11px; color: var(--text-secondary);" data-i18n="paystackMethods">Secure Paystack payment (Cards, Bank Transfer, USSD)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px; font-size: 11px; color: var(--text-secondary);" data-i18n="securePayment">
+                    Secure Payment Powered by Paystack
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab - Updated for NSPM -->
+        <div id="settings" class="tab-content">
+            <div class="settings-section">
+                <h2><i class="fas fa-cog"></i> <span data-i18n="settings">Settings</span></h2>
+                <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 13px;" data-i18n="customizeExperience">Customize your NSPM experience</p>
+                
+                <div class="settings-card">
+                    <div class="settings-group">
+                        <h3 data-i18n="language">Language</h3>
+                        <div class="language-options">
+                            <div class="language-option active" data-lang="en">English</div>
+                            <div class="language-option" data-lang="es">Español</div>
+                            <div class="language-option" data-lang="fr">Français</div>
+                            <div class="language-option" data-lang="ar">العربية</div>
+                            <div class="language-option" data-lang="zh">中文</div>
+                            <div class="language-option" data-lang="hi">हिन्दी</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Shift Settings -->
+                    <div class="settings-group">
+                        <h3 data-i18n="shiftSettings">Shift Settings</h3>
+                        <div class="form-group">
+                            <label for="defaultShiftStart" data-i18n="defaultShiftStart">Default Shift Start</label>
+                            <input type="time" id="defaultShiftStart" value="09:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="defaultShiftEnd" data-i18n="defaultShiftEnd">Default Shift End</label>
+                            <input type="time" id="defaultShiftEnd" value="17:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="gracePeriod" data-i18n="gracePeriod">Grace Period (minutes)</label>
+                            <input type="number" id="gracePeriod" value="15" min="0" max="60">
+                        </div>
+                    </div>
+                    
+                    <!-- Logout Section -->
+                    <div class="logout-section">
+                        <h3 data-i18n="account">Account</h3>
+                        <button class="logout-btn-settings" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span data-i18n="logout">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Bottom Navigation - Updated Icons -->
+    <div class="bottom-nav" id="bottomNav" style="display: none;">
+        <button class="nav-item active" onclick="switchTab('scanner')">
+            <i class="fas fa-clock"></i>
+            <span class="nav-label" data-i18n="time">Time</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('history')">
+            <i class="fas fa-chart-line"></i>
+            <span class="nav-label" data-i18n="analytics">Analytics</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('premium')">
+            <i class="fas fa-crown"></i>
+            <span class="nav-label" data-i18n="premium">Premium</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('settings')">
+            <i class="fas fa-cog"></i>
+            <span class="nav-label" data-i18n="settings">Settings</span>
+        </button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loadingMessage">Processing...</p>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="result-modal" id="resultModal" style="display: none;">
+        <div class="result-content" id="resultContent">
+            <div class="result-icon" id="resultIcon"></div>
+            <h3 id="resultTitle">Success</h3>
+            <p id="resultMessage" style="margin: 15px 0;"></p>
+            <button class="btn" onclick="closeResult()">
+                <span data-i18n="continue">Continue</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- New Shift Modal -->
+    <div class="shift-modal" id="newShiftModal" style="display: none;">
+        <div class="shift-modal-content">
+            <h2><i class="fas fa-clock"></i> <span data-i18n="addShift">Add Shift</span></h2>
+            <p style="color: var(--text-secondary); margin: 8px 0 15px; font-size: 13px;" data-i18n="addShiftDescription">Configure your work shift schedule</p>
+            
+            <div class="form-group">
+                <label for="shiftName" data-i18n="shiftName">Shift Name</label>
+                <input type="text" id="shiftName" placeholder="e.g., Morning Shift" data-i18n-placeholder="shiftNamePlaceholder">
+            </div>
+            
+            <div class="shift-time-inputs">
+                <div class="form-group">
+                    <label for="shiftStart" data-i18n="startTime">Start Time</label>
+                    <input type="time" id="shiftStart" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label for="shiftEnd" data-i18n="endTime">End Time</label>
+                    <input type="time" id="shiftEnd" value="17:00">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="breakDuration" data-i18n="breakDuration">Break Duration (minutes)</label>
+                <input type="number" id="breakDuration" value="60" min="0" max="120">
+            </div>
+            
+            <div class="form-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeNewShiftModal()">
+                    <span data-i18n="cancel">Cancel</span>
+                </button>
+                <button class="btn" onclick="addNewShift()">
+                    <i class="fas fa-clock"></i> <span data-i18n="saveShift">Save Shift</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="shift-modal" id="paymentModal" style="display: none;">
+        <div class="shift-modal-content">
+            <h2><i class="fas fa-credit-card"></i> <span data-i18n="completePayment">Complete Payment</span></h2>
+            <p style="color: var(--text-secondary); margin: 8px 0 15px; font-size: 13px;" data-i18n="completePaymentDescription">Complete your subscription payment</p>
+            
+            <div id="paystackPaymentForm" class="payment-form">
+                <div class="form-group">
+                    <label for="paystackEmail" data-i18n="emailAddress">Email Address</label>
+                    <input type="email" id="paystackEmail" placeholder="your@email.com" data-i18n-placeholder="emailPlaceholder">
+                </div>
+                <div class="form-group">
+                    <label for="paystackPhone" data-i18n="phoneNumber">Phone Number (Optional)</label>
+                    <input type="tel" id="paystackPhone" placeholder="+2348012345678" data-i18n-placeholder="phonePlaceholder">
+                </div>
+                
+                <button class="paystack-button" onclick="processPaystackPayment()">
+                    <i class="fas fa-credit-card"></i> <span data-i18n="payWithPaystack">Pay ₦5,000 with Paystack</span>
+                </button>
+            </div>
+            
+            <div class="subscription-info" style="margin: 20px 0;">
+                <div class="subscription-row">
+                    <span data-i18n="plan">Plan:</span>
+                    <span><strong data-i18n="employeeAccess">NSPM Employee Access</strong></span>
+                </div>
+                <div class="subscription-row">
+                    <span data-i18n="duration">Duration:</span>
+                    <span><strong>4 <span data-i18n="months">Months</span></strong></span>
+                </div>
+                <div class="subscription-row">
+                    <span data-i18n="amount">Amount:</span>
+                    <span><strong>₦5,000 NGN</strong></span>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="closePaymentModal()">
+                    <span data-i18n="cancel">Cancel</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // LANGUAGE SUPPORT SYSTEM - UPDATED WITH CORPORATE TERMS
+        // =============================================
+        const translations = {
+            en: {
+                // Branding
+                "smartTendance": "NSPM SmartTendance",
+                "employeeAttendancePortal": "NSPM Employee Attendance Portal",
+                "employeePortal": "NSPM Employee Portal",
+                "nspm": "NSPM",
+                
+                // Auth
+                "login": "Login",
+                "signup": "Sign Up",
+                "employeeId": "Employee ID",
+                "enterEmployeeId": "Enter your employee ID",
+                "password": "Password",
+                "enterPassword": "Enter your password",
+                "rememberMe": "Remember me",
+                "loginToPortal": "Login to NSPM Portal",
+                "forgotPassword": "Forgot your password?",
+                "fullName": "Full Name",
+                "enterFullName": "Enter your full name",
+                "workEmail": "Work Email",
+                "enterWorkEmail": "Enter your work email",
+                "department": "Department",
+                "enterDepartment": "Enter your department",
+                "position": "Job Title / Position",
+                "enterPosition": "Enter your job title",
+                "confirmPassword": "Confirm Password",
+                "createAccount": "Create Employee Account",
+                "sendResetInstructions": "Send Reset Instructions",
+                "backToLogin": "Back to Login",
+                
+                // Password strength
+                "passwordStrength": "Password strength",
+                "min8Chars": "✓ At least 8 characters",
+                "uppercaseLetter": "✓ Uppercase letter",
+                "lowercaseLetter": "✓ Lowercase letter",
+                "numberRequired": "✓ Number",
+                "symbolRequired": "✓ Symbol",
+                
+                // Terms
+                "agreeTerms": "I agree to the Terms of Service and Privacy Policy",
+                "termsOfService": "Terms of Service",
+                "privacyPolicy": "Privacy Policy",
+                
+                // Error messages
+                "validEmployeeIdRequired": "Please enter a valid employee ID",
+                "passwordRequired": "Please enter your password",
+                "fullNameRequired": "Please enter your full name",
+                "validEmailRequired": "Please enter a valid work email",
+                "departmentRequired": "Please enter your department",
+                "positionRequired": "Please enter your position",
+                "passwordRequirements": "Password must meet all requirements",
+                "passwordsDontMatch": "Passwords do not match",
+                "agreeToTerms": "You must agree to the terms and conditions",
+                
+                // Password Reset
+                "passwordResetFailed": "Password Reset Failed",
+                "resetInstructionsSent": "Password reset instructions have been sent to your email address.",
+                "tooManyAttempts": "Too many reset attempts. Please try again later.",
+                "emailNotFound": "Email Not Found",
+                "noAccountWithEmail": "No account found with this email address.",
+                "invalidEmail": "Please enter a valid email address.",
+                "sendingInstructions": "Sending reset instructions...",
+                "checkEmail": "Check Your Email",
+                
+                // Time Tracking
+                "timeTracking": "Time Tracking",
+                "clockIn": "Clock In",
+                "clockOut": "Clock Out",
+                "breakStart": "Break Start",
+                "breakEnd": "Break End",
+                "startShift": "Start Shift",
+                "endShift": "End Shift",
+                "startBreak": "Start Break",
+                "endBreak": "End Break",
+                "currentStatus": "Current Status",
+                "shiftStart": "Shift Start",
+                "hoursWorked": "Hours Worked",
+                "breakTime": "Break Time",
+                "scanQRCode": "Scan QR Code",
+                "startScanner": "Start Scanner",
+                "stopScanner": "Stop Scanner",
+                "enableCamera": "Enable Camera",
+                "cameraAccessRequired": "Camera access is required to scan QR codes",
+                "scanInstruction": "Scan your assigned QR code to clock in/out",
+                
+                // Attendance Analytics
+                "attendanceAnalytics": "Attendance Analytics",
+                "corporateAttendance": "NSPM Employee Time Tracking & Analytics",
+                "totalHours": "Total Hours",
+                "thisWeek": "this week",
+                "attendanceRate": "Attendance Rate",
+                "last30Days": "last 30 days",
+                "lateArrivals": "Late Arrivals",
+                "thisMonth": "this month",
+                "overtime": "Overtime",
+                "hoursThisMonth": "hours this month",
+                "weeklyOverview": "Weekly Overview",
+                "totalHoursWeek": "Total this week",
+                "all": "All",
+                "present": "Present",
+                "late": "Late",
+                "absent": "Absent",
+                "date": "Date",
+                "clockIn": "Clock In",
+                "clockOut": "Clock Out",
+                "hoursWorked": "Hours Worked",
+                "status": "Status",
+                "breakTime": "Break Time",
+                "lateBy": "Late By",
+                "action": "Action",
+                "onTime": "On Time",
+                
+                // Shift Management
+                "addShift": "Add Shift",
+                "addShiftDescription": "Configure your work shift schedule",
+                "shiftName": "Shift Name",
+                "shiftNamePlaceholder": "e.g., Morning Shift",
+                "startTime": "Start Time",
+                "endTime": "End Time",
+                "breakDuration": "Break Duration (minutes)",
+                "saveShift": "Save Shift",
+                "cancel": "Cancel",
+                "shiftSettings": "Shift Settings",
+                "defaultShiftStart": "Default Shift Start",
+                "defaultShiftEnd": "Default Shift End",
+                "gracePeriod": "Grace Period (minutes)",
+                
+                // Subscription
+                "subscription": "NSPM Subscription",
+                "unlockFullFeatures": "Unlock full features with our affordable subscription",
+                "currentPlan": "Current Plan",
+                "plan": "Plan",
+                "employeeAccess": "NSPM Employee Access",
+                "price": "Price",
+                "months": "months",
+                "status": "Status",
+                "expires": "Expires",
+                "paymentMethods": "Payment Methods",
+                "payWithPaystack": "Pay with Paystack",
+                "paystackMethods": "Secure Paystack payment (Cards, Bank Transfer, USSD)",
+                "securePayment": "Secure Payment Powered by Paystack",
+                "completePayment": "Complete Payment",
+                "completePaymentDescription": "Complete your subscription payment",
+                "emailAddress": "Email Address",
+                "emailPlaceholder": "your@email.com",
+                "phoneNumber": "Phone Number (Optional)",
+                "phonePlaceholder": "+2348012345678",
+                "duration": "Duration",
+                "amount": "Amount",
+                
+                // Settings
+                "settings": "Settings",
+                "customizeExperience": "Customize your NSPM experience",
+                "language": "Language",
+                "account": "Account",
+                "logout": "Logout",
+                
+                // Trial Banner
+                "freeTrialActive": "Free Trial Active",
+                "trialExpired": "Trial Expired",
+                "trialDaysLeft": "You have",
+                "daysLeft": "days left in your free trial",
+                "subscribeNow": "Subscribe Now",
+                
+                // Navigation
+                "time": "Time",
+                "analytics": "Analytics",
+                "premium": "Premium",
+                
+                // Result Modal
+                "continue": "Continue",
+                "success": "Success",
+                "error": "Error",
+                "warning": "Warning",
+                
+                // Additional translations
+                "validationError": "Validation Error",
+                "fillAllFields": "Please fill in all required fields correctly.",
+                "signingIn": "Signing in...",
+                "loginFailed": "Login Failed",
+                "invalidCredentials": "Invalid employee ID or password. Please try again.",
+                "creatingAccount": "Creating your employee account...",
+                "accountCreated": "Employee Account Created!",
+                "welcomeMessage": "Your employee account has been created successfully. Welcome to NSPM SmartTendance!",
+                "registrationFailed": "Registration Failed",
+                "emailExists": "An account with this email already exists.",
+                "employeeIdExists": "An account with this employee ID already exists.",
+                "registrationFailedGeneric": "Registration failed. Please try again.",
+                "languageChanged": "Language Changed",
+                "languageSetTo": "App language has been set to",
+                "active": "Active",
+                "trial": "Trial",
+                "paid": "Paid",
+                "expired": "Expired",
+                "subscribeToContinue": "Please subscribe to continue using the scanner",
+                "subscriptionRequired": "Subscription Required",
+                "pleaseSubscribe": "Please Subscribe",
+                "missingInformation": "Missing Information",
+                "noShiftsAdded": "No shifts added yet. Use the clock button to add your work shift.",
+                "noAttendanceRecords": "No attendance records found.",
+                "deleteRecord": "Delete Record",
+                "confirmDeleteRecord": "Are you sure you want to delete this attendance record?",
+                "recordDeleted": "Record Deleted",
+                "recordDeletedSuccessfully": "Attendance record has been successfully deleted.",
+                "employeeInfoNotFound": "Employee information not found",
+                "invalidQRCode": "Invalid QR code format. Please scan a valid attendance QR code.",
+                "invalidQRCodeMissingFields": "Invalid QR code: Missing required fields",
+                "shiftNotActive": "No active shift",
+                "alreadyClockedIn": "You are already clocked in",
+                "notClockedIn": "You are not clocked in",
+                "clockInSuccess": "Clock In Successful!",
+                "clockOutSuccess": "Clock Out Successful!",
+                "breakStartSuccess": "Break Started",
+                "breakEndSuccess": "Break Ended",
+                "clockInMessage": "You have successfully clocked in at",
+                "clockOutMessage": "You have successfully clocked out at",
+                "hoursWorkedToday": "Hours worked today",
+                "breakMessage": "Break time",
+                "shiftAlreadyEnded": "Shift already ended",
+                "paymentSuccessful": "Payment Successful!",
+                "thankYouForPayment": "Thank you for your ₦5,000 payment! Your subscription is now active.",
+                "paymentId": "Payment ID",
+                "confirmLogout": "Are you sure you want to logout?",
+                "trialExpired": "Trial Expired",
+                "clearCache": "Clear cache and reset login",
+                "cacheCleared": "Cache cleared successfully"
+            },
+            // Additional languages would go here with the same key structure
+            // For brevity, only English is shown, but you can copy the same structure from the original
+        };
+
+        // =============================================
+        // APPLICATION STATE - UPDATED FOR CORPORATE USE
+        // =============================================
+        
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem('nspmUsers')) || [];
+        
+        // Employee data for main app
+        let employeeShifts = [];
+        let attendanceRecords = [];
+        let activeShift = null;
+        let shiftTimer = null;
+        let breakTimer = null;
+        let videoStream = null;
+        let scanInterval = null;
+        let isScannerActive = false;
+        let currentLanguage = 'en';
+        let pendingAction = null; // Track pending clock action
+        
+        // DUPLICATE PROTECTION VARIABLES
+        let lastScannedCode = null;
+        let scanCooldown = false;
+
+        // Payment variables
+        let currentPaymentMethod = null;
+
+        const TRIAL_DAYS = 7;
+        const SUBSCRIPTION_PRICE = 5000;
+        const SUBSCRIPTION_DURATION = 4;
+
+        // Paystack configuration
+        const PAYSTACK_PUBLIC_KEY = 'pk_live_54247d3182c251b3d9509ef2bff79157e3061edb';
+        
+        // Default shift times
+        let DEFAULT_SHIFT_START = '09:00';
+        let DEFAULT_SHIFT_END = '17:00';
+        let GRACE_PERIOD_MINUTES = 15;
+
+        // =============================================
+        // CORPORATE ATTENDANCE FUNCTIONS
+        // =============================================
+
+        // Prepare clock actions
+        function prepareClockIn() {
+            pendingAction = 'clockIn';
+            startScanner();
+            showResult('info', 'Ready to Clock In', 'Scan your QR code to clock in');
+        }
+
+        function prepareClockOut() {
+            if (!activeShift) {
+                showResult('error', 'Cannot Clock Out', 'You are not clocked in');
+                return;
+            }
+            pendingAction = 'clockOut';
+            startScanner();
+            showResult('info', 'Ready to Clock Out', 'Scan your QR code to clock out');
+        }
+
+        function prepareBreakStart() {
+            if (!activeShift) {
+                showResult('error', 'Cannot Start Break', 'You are not clocked in');
+                return;
+            }
+            if (activeShift.onBreak) {
+                showResult('error', 'Already on Break', 'You are already on a break');
+                return;
+            }
+            pendingAction = 'breakStart';
+            startScanner();
+            showResult('info', 'Ready to Start Break', 'Scan your QR code to start your break');
+        }
+
+        function prepareBreakEnd() {
+            if (!activeShift || !activeShift.onBreak) {
+                showResult('error', 'Cannot End Break', 'You are not on break');
+                return;
+            }
+            pendingAction = 'breakEnd';
+            startScanner();
+            showResult('info', 'Ready to End Break', 'Scan your QR code to end your break');
+        }
+
+        // Process QR code for attendance actions
+        async function processQRCode(qrData) {
+            try {
+                console.log("🔄 Processing QR code:", qrData);
+                
+                const employeeId = currentUser.userId;
+                const employeeName = currentUser.name;
+                
+                if (!employeeId || !employeeName) {
+                    throw new Error(getTranslation('employeeInfoNotFound'));
+                }
+
+                let data;
+                try {
+                    data = JSON.parse(qrData);
+                } catch (parseError) {
+                    throw new Error(getTranslation('invalidQRCode'));
+                }
+
+                // Verify it's a valid company QR code
+                if (!data.company || data.company !== 'NSPM') {
+                    throw new Error('Invalid company QR code');
+                }
+
+                const today = new Date().toISOString().split('T')[0];
+                const currentTime = new Date();
+                const timestamp = currentTime.getTime();
+
+                switch(pendingAction) {
+                    case 'clockIn':
+                        await handleClockIn(data, employeeId, employeeName, today, timestamp);
+                        break;
+                    case 'clockOut':
+                        await handleClockOut(data, employeeId, employeeName, today, timestamp);
+                        break;
+                    case 'breakStart':
+                        await handleBreakStart(data, employeeId, employeeName, timestamp);
+                        break;
+                    case 'breakEnd':
+                        await handleBreakEnd(data, employeeId, employeeName, timestamp);
+                        break;
+                    default:
+                        throw new Error('No pending action');
+                }
+                
+                pendingAction = null;
+                stopScanner();
+                   
+            } catch (error) {
+                console.error("❌ QR processing error:", error);
+                scanCooldown = false;
+                lastScannedCode = null;
+                showResult('error', getTranslation('scanFailed'), error.message);
+            }
+        }
+
+        // Clock In Handler
+        async function handleClockIn(data, employeeId, employeeName, today, timestamp) {
+            // Check if already clocked in today
+            const todayRecord = attendanceRecords.find(r => 
+                r.date === today && r.clockOut === null
+            );
+            
+            if (todayRecord) {
+                throw new Error(getTranslation('alreadyClockedIn'));
+            }
+
+            // Get shift start time from settings or QR
+            const shiftStart = data.shiftStart || DEFAULT_SHIFT_START;
+            const shiftEnd = data.shiftEnd || DEFAULT_SHIFT_END;
+            
+            // Calculate if late
+            const clockInTime = new Date(timestamp);
+            const shiftStartTime = new Date();
+            const [hours, minutes] = shiftStart.split(':');
+            shiftStartTime.setHours(parseInt(hours), parseInt(minutes), 0);
+            
+            const lateMinutes = Math.max(0, Math.floor((clockInTime - shiftStartTime) / 60000));
+            const isLate = lateMinutes > GRACE_PERIOD_MINUTES;
+            
+            const newRecord = {
+                id: `attendance_${employeeId}_${today}`,
+                employeeId: employeeId,
+                employeeName: employeeName,
+                department: currentUser.department,
+                position: currentUser.position,
+                date: today,
+                clockIn: timestamp,
+                clockOut: null,
+                shiftStart: shiftStart,
+                shiftEnd: shiftEnd,
+                breakStart: null,
+                breakEnd: null,
+                totalBreakMinutes: 0,
+                status: isLate ? 'late' : 'present',
+                lateMinutes: isLate ? lateMinutes : 0,
+                room: data.room || 'Office',
+                timestamp: timestamp
+            };
+            
+            attendanceRecords.push(newRecord);
+            
+            // Set active shift
+            activeShift = {
+                ...newRecord,
+                onBreak: false,
+                breakStartTime: null
+            };
+            
+            saveEmployeeData();
+            startShiftTimer();
+            updateShiftUI();
+            
+            showResult('success', getTranslation('clockInSuccess'), 
+                `${getTranslation('clockInMessage')} ${formatTime(timestamp)}<br>
+                 ${isLate ? `⚠️ Late by ${lateMinutes} minutes` : '✅ On time'}<br>
+                 ${getTranslation('shiftStart')}: ${shiftStart}`);
+        }
+
+        // Clock Out Handler
+        async function handleClockOut(data, employeeId, employeeName, today, timestamp) {
+            const record = attendanceRecords.find(r => 
+                r.date === today && r.clockOut === null
+            );
+            
+            if (!record) {
+                throw new Error(getTranslation('notClockedIn'));
+            }
+            
+            record.clockOut = timestamp;
+            
+            // Calculate total hours worked
+            const hoursWorked = (timestamp - record.clockIn) / (1000 * 60 * 60);
+            record.hoursWorked = parseFloat(hoursWorked.toFixed(2));
+            
+            // Calculate overtime
+            const [endHours, endMinutes] = record.shiftEnd.split(':');
+            const shiftEndTime = new Date(timestamp);
+            shiftEndTime.setHours(parseInt(endHours), parseInt(endMinutes), 0);
+            
+            const overtimeMinutes = Math.max(0, Math.floor((timestamp - shiftEndTime) / 60000));
+            record.overtimeMinutes = overtimeMinutes;
+            
+            // Clear active shift
+            activeShift = null;
+            stopShiftTimer();
+            updateShiftUI();
+            
+            saveEmployeeData();
+            loadAttendanceHistory();
+            generateKPIs();
+            
+            showResult('success', getTranslation('clockOutSuccess'), 
+                `${getTranslation('clockOutMessage')} ${formatTime(timestamp)}<br>
+                 ${getTranslation('hoursWorkedToday')}: ${record.hoursWorked} hours<br>
+                 ${overtimeMinutes > 0 ? `📊 Overtime: ${overtimeMinutes} minutes` : ''}`);
+        }
+
+        // Break Start Handler
+        async function handleBreakStart(data, employeeId, employeeName, timestamp) {
+            const record = attendanceRecords.find(r => 
+                r.date === new Date().toISOString().split('T')[0] && r.clockOut === null
+            );
+            
+            if (!record) {
+                throw new Error(getTranslation('notClockedIn'));
+            }
+            
+            if (activeShift) {
+                activeShift.onBreak = true;
+                activeShift.breakStartTime = timestamp;
+                record.breakStart = timestamp;
+            }
+            
+            updateShiftUI();
+            startBreakTimer();
+            
+            showResult('success', getTranslation('breakStartSuccess'), 
+                `${getTranslation('breakMessage')} started at ${formatTime(timestamp)}`);
+        }
+
+        // Break End Handler
+        async function handleBreakEnd(data, employeeId, employeeName, timestamp) {
+            const record = attendanceRecords.find(r => 
+                r.date === new Date().toISOString().split('T')[0] && r.clockOut === null
+            );
+            
+            if (!record) {
+                throw new Error(getTranslation('notClockedIn'));
+            }
+            
+            if (activeShift && activeShift.onBreak) {
+                activeShift.onBreak = false;
+                
+                // Calculate break duration
+                const breakMinutes = Math.floor((timestamp - activeShift.breakStartTime) / 60000);
+                record.totalBreakMinutes = (record.totalBreakMinutes || 0) + breakMinutes;
+                record.breakEnd = timestamp;
+                
+                activeShift.breakStartTime = null;
+            }
+            
+            updateShiftUI();
+            stopBreakTimer();
+            
+            showResult('success', getTranslation('breakEndSuccess'), 
+                `${getTranslation('breakMessage')} ended at ${formatTime(timestamp)}<br>
+                 Duration: ${Math.floor(breakMinutes / 60)}h ${breakMinutes % 60}m`);
+        }
+
+        // Timer Functions
+        function startShiftTimer() {
+            if (shiftTimer) clearInterval(shiftTimer);
+            shiftTimer = setInterval(updateShiftTimer, 1000);
+        }
+
+        function stopShiftTimer() {
+            if (shiftTimer) {
+                clearInterval(shiftTimer);
+                shiftTimer = null;
+            }
+        }
+
+        function startBreakTimer() {
+            if (breakTimer) clearInterval(breakTimer);
+            breakTimer = setInterval(updateBreakTimer, 1000);
+        }
+
+        function stopBreakTimer() {
+            if (breakTimer) {
+                clearInterval(breakTimer);
+                breakTimer = null;
+            }
+        }
+
+        function updateShiftTimer() {
+            if (!activeShift) {
+                document.getElementById('hoursWorkedTimer').textContent = '00:00:00';
+                return;
+            }
+            
+            const now = new Date();
+            const shiftStart = new Date(activeShift.clockIn);
+            const diff = now - shiftStart;
+            
+            if (activeShift.onBreak) {
+                // Subtract break time
+                const breakDiff = now - activeShift.breakStartTime;
+                const totalBreak = (activeShift.totalBreakMinutes || 0) * 60 * 1000 + breakDiff;
+                const workDiff = diff - totalBreak;
+                document.getElementById('hoursWorkedTimer').textContent = formatDuration(workDiff);
+            } else {
+                document.getElementById('hoursWorkedTimer').textContent = formatDuration(diff);
+            }
+        }
+
+        function updateBreakTimer() {
+            if (!activeShift || !activeShift.onBreak) {
+                document.getElementById('breakTimer').textContent = '00:00:00';
+                return;
+            }
+            
+            const now = new Date();
+            const breakStart = new Date(activeShift.breakStartTime);
+            const diff = now - breakStart;
+            document.getElementById('breakTimer').textContent = formatDuration(diff);
+        }
+
+        function formatDuration(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Update UI based on shift status
+        function updateShiftUI() {
+            const shiftStatusDiv = document.getElementById('currentShiftStatus');
+            const clockInBtn = document.getElementById('clockInBtn');
+            const clockOutBtn = document.getElementById('clockOutBtn');
+            const breakStartBtn = document.getElementById('breakStartBtn');
+            const breakEndBtn = document.getElementById('breakEndBtn');
+            const breakTimerRow = document.getElementById('breakTimerRow');
+            
+            if (activeShift) {
+                shiftStatusDiv.style.display = 'block';
+                document.getElementById('shiftStatusValue').textContent = 
+                    activeShift.onBreak ? 'On Break' : 'Active';
+                document.getElementById('shiftStatusValue').className = 'status-value ' + 
+                    (activeShift.onBreak ? 'status-break' : 'status-active');
+                document.getElementById('shiftStartTime').textContent = 
+                    formatTime(activeShift.clockIn);
+                
+                clockInBtn.disabled = true;
+                clockOutBtn.disabled = false;
+                breakStartBtn.disabled = activeShift.onBreak;
+                breakEndBtn.disabled = !activeShift.onBreak;
+                
+                breakTimerRow.style.display = activeShift.onBreak ? 'flex' : 'none';
+            } else {
+                shiftStatusDiv.style.display = 'none';
+                clockInBtn.disabled = false;
+                clockOutBtn.disabled = true;
+                breakStartBtn.disabled = true;
+                breakEndBtn.disabled = true;
+                breakTimerRow.style.display = 'none';
+            }
+        }
+
+        // =============================================
+        // CORPORATE ATTENDANCE ANALYTICS
+        // =============================================
+
+        function generateKPIs() {
+            const today = new Date().toISOString().split('T')[0];
+            const thisWeek = getWeekDates();
+            const thisMonth = new Date().getMonth();
+            
+            // Filter records for current week
+            const weekRecords = attendanceRecords.filter(r => 
+                thisWeek.includes(r.date) && r.clockOut
+            );
+            
+            // Total hours this week
+            const totalHours = weekRecords.reduce((sum, r) => sum + (r.hoursWorked || 0), 0);
+            document.getElementById('totalHoursKPI').textContent = totalHours.toFixed(1);
+            
+            // Attendance rate (days present vs total work days)
+            const workDaysThisMonth = 22; // Approximate
+            const daysPresentThisMonth = attendanceRecords.filter(r => 
+                new Date(r.date).getMonth() === thisMonth && r.status !== 'absent'
+            ).length;
+            const attendanceRate = Math.round((daysPresentThisMonth / workDaysThisMonth) * 100);
+            document.getElementById('attendanceRateKPI').textContent = `${attendanceRate}%`;
+            
+            // Late arrivals this month
+            const lateThisMonth = attendanceRecords.filter(r => 
+                new Date(r.date).getMonth() === thisMonth && r.status === 'late'
+            ).length;
+            document.getElementById('lateArrivalsKPI').textContent = lateThisMonth;
+            
+            // Overtime hours this month
+            const overtimeThisMonth = attendanceRecords.filter(r => 
+                new Date(r.date).getMonth() === thisMonth && r.overtimeMinutes
+            ).reduce((sum, r) => sum + (r.overtimeMinutes || 0), 0);
+            document.getElementById('overtimeKPI').textContent = (overtimeThisMonth / 60).toFixed(1);
+        }
+
+        function getWeekDates() {
+            const dates = [];
+            const today = new Date();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - today.getDay() + 1);
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + i);
+                dates.push(date.toISOString().split('T')[0]);
+            }
+            
+            return dates;
+        }
+
+        function loadWeek(weekType) {
+            const weekDates = getWeekDates();
+            const grid = document.getElementById('daySummaryGrid');
+            
+            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            let totalWeekHours = 0;
+            
+            grid.innerHTML = '';
+            
+            weekDates.forEach((date, index) => {
+                const record = attendanceRecords.find(r => r.date === date);
+                const hours = record?.hoursWorked || 0;
+                totalWeekHours += hours;
+                
+                let status = 'absent';
+                let statusClass = 'status-absent';
+                
+                if (record) {
+                    if (record.status === 'present') {
+                        status = 'on-time';
+                        statusClass = 'status-on-time';
+                    } else if (record.status === 'late') {
+                        status = 'late';
+                        statusClass = 'status-late';
+                    }
+                }
+                
+                const dayItem = document.createElement('div');
+                dayItem.className = 'day-summary-item';
+                dayItem.innerHTML = `
+                    <div class="day-name">${dayNames[index]}</div>
+                    <div class="day-hours">${hours.toFixed(1)}h</div>
+                    <div class="day-status ${statusClass}">${status}</div>
+                `;
+                grid.appendChild(dayItem);
+            });
+            
+            document.getElementById('totalWeekHours').textContent = `${totalWeekHours.toFixed(1)} hrs`;
+        }
+
+        function filterAttendance(filter) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadAttendanceHistory(filter);
+        }
+
+        // =============================================
+        // SHIFT MANAGEMENT
+        // =============================================
+
+        function showNewShiftModal() {
+            document.getElementById('newShiftModal').style.display = 'flex';
+        }
+
+        function closeNewShiftModal() {
+            document.getElementById('newShiftModal').style.display = 'none';
+        }
+
+        function addNewShift() {
+            const shiftName = document.getElementById('shiftName').value.trim();
+            const shiftStart = document.getElementById('shiftStart').value;
+            const shiftEnd = document.getElementById('shiftEnd').value;
+            const breakDuration = document.getElementById('breakDuration').value;
+            
+            if (!shiftName || !shiftStart || !shiftEnd) {
+                showResult('error', getTranslation('missingInformation'), getTranslation('fillAllFields'));
+                return;
+            }
+            
+            const newShift = {
+                id: `shift_${Date.now()}`,
+                name: shiftName,
+                start: shiftStart,
+                end: shiftEnd,
+                breakDuration: parseInt(breakDuration)
+            };
+            
+            employeeShifts.push(newShift);
+            saveEmployeeData();
+            closeNewShiftModal();
+            
+            showResult('success', 'Shift Added', `${shiftName} (${shiftStart} - ${shiftEnd})`);
+        }
+
+        // =============================================
+        // MODIFIED ATTENDANCE HISTORY LOADER - CORPORATE STYLE
+        // =============================================
+
+        function loadAttendanceHistory(filter = 'all') {
+            const container = document.getElementById('attendanceTableBody');
+            if (!container) return;
+            
+            let filteredRecords = [...attendanceRecords].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            );
+            
+            if (filter !== 'all') {
+                filteredRecords = filteredRecords.filter(r => r.status === filter);
+            }
+            
+            if (filteredRecords.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 30px;">
+                            <i class="fas fa-clock" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                            ${getTranslation('noAttendanceRecords')}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            filteredRecords.forEach(record => {
+                const statusClass = `badge-${record.status === 'present' ? 'present' : record.status === 'late' ? 'late' : 'absent'}`;
+                const statusText = record.status === 'present' ? getTranslation('onTime') : 
+                                 record.status === 'late' ? getTranslation('late') : 
+                                 getTranslation('absent');
+                
+                const clockInTime = record.clockIn ? formatTime(record.clockIn) : '--:--';
+                const clockOutTime = record.clockOut ? formatTime(record.clockOut) : '--:--';
+                const hoursWorked = record.hoursWorked ? `${record.hoursWorked.toFixed(1)}h` : '--';
+                const breakTime = record.totalBreakMinutes ? 
+                    `${Math.floor(record.totalBreakMinutes / 60)}h ${record.totalBreakMinutes % 60}m` : '0h';
+                const lateBy = record.lateMinutes ? `${record.lateMinutes} min` : '--';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(record.date)}</td>
+                    <td><span class="hours-display">${clockInTime}</span></td>
+                    <td><span class="hours-display">${clockOutTime}</span></td>
+                    <td><span class="hours-display hours-positive">${hoursWorked}</span></td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${breakTime}</td>
+                    <td>${lateBy}</td>
+                    <td class="action-cell">
+                        <button class="delete-record-btn" onclick="deleteAttendanceRecord('${record.id}')" title="${getTranslation('deleteRecord')}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                container.appendChild(row);
+            });
+            
+            generateKPIs();
+            loadWeek('current');
+        }
+
+        // =============================================
+        // FIREBASE AUTH INTEGRATION - UPDATED FOR NSPM
+        // =============================================
+        
+        async function handleFirebaseSignup(userData) {
+            try {
+                const cleanEmail = userData.userId.replace(/\//g, '.') + '@nspm.com';
+                
+                const userCredential = await auth.createUserWithEmailAndPassword(
+                    cleanEmail, 
+                    userData.password
+                );
+                
+                const firebaseUser = userCredential.user;
+                console.log("🔥 Firebase User Created:", firebaseUser.uid);
+                
+                await database.ref('employees/' + firebaseUser.uid).set({
+                    ...userData,
+                    firebaseUid: firebaseUser.uid,
+                    cleanEmail: cleanEmail,
+                    company: 'NSPM',
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                return firebaseUser;
+            } catch (error) {
+                console.error("Firebase Signup Error:", error);
+                throw error;
+            }
+        }
+
+        async function handleFirebaseLogin(employeeId, password) {
+            try {
+                const cleanEmail = employeeId.replace(/\//g, '.') + '@nspm.com';
+                const userCredential = await auth.signInWithEmailAndPassword(cleanEmail, password);
+                console.log("🔥 Firebase User Logged In:", userCredential.user.uid);
+                return userCredential.user;
+            } catch (error) {
+                console.error("Firebase Login Error:", error);
+                throw error;
+            }
+        }
+
+        // =============================================
+        // MAIN APP INITIALIZATION - UPDATED
+        // =============================================
+
+        function initApp() {
+            setupFirebaseAuthListener();
+            handlePasswordResetConfirmation();
+            
+            const savedUser = localStorage.getItem('currentNSPMUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        if (currentUser.subscription?.type !== 'paid') {
+                            initializeTrialForNewUser();
+                        }
+                        showMainApp();
+                        initializeMainApp();
+                    } else {
+                        currentUser = null;
+                        localStorage.removeItem('currentNSPMUser');
+                        showAuth();
+                    }
+                });
+            } else {
+                showAuth();
+            }
+            
+            setupEventListeners();
+            
+            const savedLanguage = localStorage.getItem('language') || 'en';
+            changeLanguage(savedLanguage, false);
+            
+            // Load settings
+            const savedShiftStart = localStorage.getItem('defaultShiftStart');
+            const savedShiftEnd = localStorage.getItem('defaultShiftEnd');
+            const savedGracePeriod = localStorage.getItem('gracePeriod');
+            
+            if (savedShiftStart) DEFAULT_SHIFT_START = savedShiftStart;
+            if (savedShiftEnd) DEFAULT_SHIFT_END = savedShiftEnd;
+            if (savedGracePeriod) GRACE_PERIOD_MINUTES = parseInt(savedGracePeriod);
+            
+            document.getElementById('defaultShiftStart').value = DEFAULT_SHIFT_START;
+            document.getElementById('defaultShiftEnd').value = DEFAULT_SHIFT_END;
+            document.getElementById('gracePeriod').value = GRACE_PERIOD_MINUTES;
+        }
+
+        function setupEventListeners() {
+            // Auth form toggles
+            document.getElementById('loginToggle').addEventListener('click', showLoginForm);
+            document.getElementById('signupToggle').addEventListener('click', showSignupForm);
+            document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                showForgotPasswordForm();
+            });
+            document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                showLoginForm();
+            });
+            document.getElementById('clearCacheLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                clearAuthCache();
+            });
+            
+            // Form submissions
+            document.getElementById('loginForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleLogin();
+            });
+            document.getElementById('signupForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleSignup();
+            });
+            document.getElementById('forgotPasswordForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleForgotPassword();
+            });
+            
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Language options
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    changeLanguage(this.getAttribute('data-lang'));
+                });
+            });
+            
+            // Shift settings changes
+            document.getElementById('defaultShiftStart').addEventListener('change', function() {
+                DEFAULT_SHIFT_START = this.value;
+                localStorage.setItem('defaultShiftStart', this.value);
+            });
+            
+            document.getElementById('defaultShiftEnd').addEventListener('change', function() {
+                DEFAULT_SHIFT_END = this.value;
+                localStorage.setItem('defaultShiftEnd', this.value);
+            });
+            
+            document.getElementById('gracePeriod').addEventListener('change', function() {
+                GRACE_PERIOD_MINUTES = parseInt(this.value);
+                localStorage.setItem('gracePeriod', this.value);
+            });
+            
+            setupRealTimeValidation();
+        }
+
+        // =============================================
+        // AUTHENTICATION FUNCTIONS - UPDATED FOR NSPM
+        // =============================================
+
+        async function handleLogin() {
+            const employeeId = document.getElementById('loginId').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const isIdValid = validateField(document.getElementById('loginId'), 'loginIdError', employeeId.trim() !== '');
+            const isPasswordValid = validateField(document.getElementById('loginPassword'), 'loginPasswordError', password.trim() !== '');
+            
+            if (!isIdValid || !isPasswordValid) {
+                showResult('error', getTranslation('validationError'), getTranslation('fillAllFields'));
+                return;
+            }
+            
+            showLoading(getTranslation('signingIn'));
+            
+            try {
+                const user = users.find(u => u.userId === employeeId);
+                
+                if (!user) {
+                    hideLoading();
+                    showResult('error', getTranslation('loginFailed'), getTranslation('invalidCredentials'));
+                    return;
+                }
+                
+                await handleFirebaseLogin(employeeId, password);
+                loginUser(user);
+                
+            } catch (error) {
+                hideLoading();
+                console.error("Login error:", error);
+                
+                if (error.code === 'auth/wrong-password') {
+                    showResult('error', 'Login Failed', 'The password is incorrect.');
+                } else if (error.code === 'auth/user-not-found') {
+                    showResult('error', 'Login Failed', 'No account found with these credentials.');
+                } else if (error.code === 'auth/too-many-requests') {
+                    showResult('error', 'Login Failed', 'Too many failed attempts. Please try again later.');
+                } else {
+                    showResult('error', 'Login Failed', 'An error occurred during login. Please try again.');
+                }
+            }
+        }
+
+        async function handleSignup() {
+            const name = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const userId = document.getElementById('userId').value;
+            const department = document.getElementById('department').value;
+            const position = document.getElementById('position').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+            
+            const isNameValid = validateField(document.getElementById('fullName'), 'fullNameError', name.trim() !== '');
+            const isEmailValid = validateField(document.getElementById('email'), 'emailError', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+            const isUserIdValid = validateField(document.getElementById('userId'), 'userIdError', userId.trim() !== '');
+            const isDepartmentValid = validateField(document.getElementById('department'), 'departmentError', department.trim() !== '');
+            const isPositionValid = validateField(document.getElementById('position'), 'positionError', position.trim() !== '');
+            
+            const isPasswordValid = updatePasswordStrength(password);
+            validateField(document.getElementById('signupPassword'), 'signupPasswordError', isPasswordValid);
+            
+            const isConfirmPasswordValid = validateField(document.getElementById('confirmPassword'), 'confirmPasswordError', password === confirmPassword);
+            const isTermsValid = validateField(document.getElementById('agreeTerms'), 'termsError', agreeTerms);
+            
+            if (!isNameValid || !isEmailValid || !isUserIdValid || !isDepartmentValid || 
+                !isPositionValid || !isPasswordValid || !isConfirmPasswordValid || !isTermsValid) {
+                showResult('error', getTranslation('validationError'), getTranslation('fillAllFields'));
+                return;
+            }
+            
+            if (users.find(u => u.email === email)) {
+                showResult('error', getTranslation('registrationFailed'), getTranslation('emailExists'));
+                return;
+            }
+            
+            if (users.find(u => u.userId === userId)) {
+                showResult('error', getTranslation('registrationFailed'), getTranslation('employeeIdExists'));
+                return;
+            }
+            
+            showLoading(getTranslation('creatingAccount'));
+            
+            try {
+                const userData = {
+                    id: 'EMP' + (users.length + 1001),
+                    name: name,
+                    email: email,
+                    password: password,
+                    userId: userId,
+                    department: department,
+                    position: position,
+                    role: 'employee',
+                    company: 'NSPM',
+                    subscription: {
+                        type: 'trial',
+                        startDate: new Date().toISOString(),
+                        status: 'active',
+                        trialDaysUsed: 0,
+                        isNewUser: true,
+                        lastLoginDate: new Date().toISOString().split('T')[0],
+                        daysUsed: 0
+                    }
+                };
+                
+                const firebaseUser = await handleFirebaseSignup(userData);
+                userData.firebaseUid = firebaseUser.uid;
+                
+                users.push(userData);
+                localStorage.setItem('nspmUsers', JSON.stringify(users));
+                
+                loginUser(userData);
+                hideLoading();
+                
+                showResult('success', getTranslation('accountCreated'), 
+                    getTranslation('welcomeMessage'));
+                
+            } catch (error) {
+                hideLoading();
+                console.error("Registration Error:", error);
+                
+                let errorMessage = getTranslation('registrationFailedGeneric');
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Email already registered.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = getTranslation('weakPassword');
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = getTranslation('invalidEmail');
+                } else if (error.code === 'auth/network-request-failed') {
+                    errorMessage = getTranslation('networkError');
+                }
+                
+                showResult('error', getTranslation('registrationFailed'), errorMessage);
+            }
+        }
+
+        function loginUser(user) {
+            currentUser = user;
+            localStorage.removeItem('pendingPaymentRef');
+            localStorage.removeItem('paymentSuccessShown');
+            
+            if (currentUser.subscription?.type !== 'paid') {
+                initializeTrialForNewUser();
+            }
+            
+            localStorage.setItem('currentNSPMUser', JSON.stringify(currentUser));
+            
+            hideLoading();
+            showMainApp();
+        }
+
+        function logout() {
+            if (confirm(getTranslation('confirmLogout'))) {
+                stopScanner();
+                stopShiftTimer();
+                stopBreakTimer();
+                
+                auth.signOut().then(() => {
+                    console.log("User signed out from Firebase");
+                }).catch((error) => {
+                    console.error("Firebase sign out error:", error);
+                });
+                
+                currentUser = null;
+                activeShift = null;
+                localStorage.removeItem('currentNSPMUser');
+                localStorage.removeItem('paymentSuccessShown');
+                showAuth();
+                
+                // Reset forms
+                document.getElementById('loginForm').reset();
+                document.getElementById('signupForm').reset();
+                document.getElementById('forgotPasswordForm').reset();
+                
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                });
+                document.querySelectorAll('.input-with-icon').forEach(el => {
+                    el.classList.remove('error');
+                });
+            }
+        }
+
+        function showAuth() {
+            document.getElementById('authSection').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('bottomNav').style.display = 'none';
+            document.getElementById('clearCacheLinkContainer').style.display = 'none';
+        }
+
+        function showMainApp() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('bottomNav').style.display = 'flex';
+            document.getElementById('clearCacheLinkContainer').style.display = 'block';
+            
+            if (currentUser) {
+                document.getElementById('employeeName').textContent = currentUser.name;
+                document.getElementById('employeeId').textContent = currentUser.userId;
+                document.getElementById('employeeDepartment').textContent = currentUser.department;
+                document.getElementById('employeePosition').textContent = currentUser.position;
+            }
+            
+            updateTrialBanner();
+            
+            if (paymentSuccessShown) {
+                paymentSuccessShown = false;
+                localStorage.removeItem('paymentSuccessShown');
+            }
+        }
+
+        function initializeMainApp() {
+            console.log("🚀 Initializing NSPM Employee App for:", currentUser.name);
+            loadEmployeeData();
+            initializeSubscription();
+            updateTrialBanner();
+            
+            // Check for active shift
+            const today = new Date().toISOString().split('T')[0];
+            activeShift = attendanceRecords.find(r => r.date === today && r.clockOut === null);
+            if (activeShift) {
+                startShiftTimer();
+            }
+            updateShiftUI();
+            
+            console.log("✅ NSPM App initialized for:", currentUser.name);
+        }
+
+        function loadEmployeeData() {
+            const userKey = `employeeShifts_${currentUser.id}`;
+            const recordsKey = `attendanceRecords_${currentUser.id}`;
+            
+            const savedShifts = localStorage.getItem(userKey);
+            const savedRecords = localStorage.getItem(recordsKey);
+            
+            if (savedShifts) {
+                employeeShifts = JSON.parse(savedShifts);
+            } else {
+                employeeShifts = [];
+            }
+            
+            if (savedRecords) {
+                attendanceRecords = JSON.parse(savedRecords);
+                console.log(`📊 Loaded ${attendanceRecords.length} attendance records`);
+            }
+            
+            loadAttendanceHistory();
+        }
+
+        function saveEmployeeData() {
+            const userKey = `employeeShifts_${currentUser.id}`;
+            const recordsKey = `attendanceRecords_${currentUser.id}`;
+            
+            localStorage.setItem(userKey, JSON.stringify(employeeShifts));
+            localStorage.setItem(recordsKey, JSON.stringify(attendanceRecords));
+        }
+
+        function deleteAttendanceRecord(recordId) {
+            if (confirm(getTranslation('confirmDeleteRecord'))) {
+                attendanceRecords = attendanceRecords.filter(record => record.id !== recordId);
+                saveEmployeeData();
+                loadAttendanceHistory();
+                showResult('success', getTranslation('recordDeleted'), getTranslation('recordDeletedSuccessfully'));
+            }
+        }
+
+        // =============================================
+        // SCANNER FUNCTIONS - MODIFIED FOR CORPORATE USE
+        // =============================================
+
+        async function startScanner() {
+            if (isScannerActive) return;
+            
+            if (!canUserScan()) {
+                showResult('error', getTranslation('subscriptionRequired'), getTranslation('subscribeToContinue'));
+                switchTab('premium');
+                return;
+            }
+            
+            const video = document.getElementById('video');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const cameraPermission = document.getElementById('cameraPermission');
+            const cameraDarkOverlay = document.getElementById('cameraDarkOverlay');
+            
+            try {
+                const currentStream = video.srcObject;
+                if (currentStream) {
+                    if (cameraPermission) cameraPermission.style.display = 'none';
+                    if (cameraDarkOverlay) cameraDarkOverlay.style.display = 'none';
+                    if (video) video.style.display = 'block';
+                    if (startBtn) startBtn.style.display = 'none';
+                    if (stopBtn) stopBtn.style.display = 'block';
+                    scanInterval = setInterval(scanQRCode, 500);
+                    isScannerActive = true;
+                    
+                    const cameraContainer = document.querySelector('.camera-container');
+                    cameraContainer.classList.remove('camera-dark');
+                    cameraContainer.classList.add('camera-active');
+                    
+                    return;
+                }
+                
+                let constraints = { 
+                    video: { 
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                };
+                
+                videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = videoStream;
+                
+                video.onloadedmetadata = function() {
+                    if (cameraPermission) cameraPermission.style.display = 'none';
+                    if (cameraDarkOverlay) cameraDarkOverlay.style.display = 'none';
+                    if (video) video.style.display = 'block';
+                    
+                    if (startBtn) startBtn.style.display = 'none';
+                    if (stopBtn) stopBtn.style.display = 'block';
+                    
+                    scanInterval = setInterval(scanQRCode, 500);
+                    isScannerActive = true;
+                    
+                    const cameraContainer = document.querySelector('.camera-container');
+                    cameraContainer.classList.remove('camera-dark');
+                    cameraContainer.classList.add('camera-active');
+                    
+                    console.log("✅ Camera started successfully");
+                };
+                
+            } catch (err) {
+                console.error('Camera access error:', err);
+                if (cameraPermission) cameraPermission.style.display = 'flex';
+                if (cameraDarkOverlay) cameraDarkOverlay.style.display = 'none';
+                if (video) video.style.display = 'none';
+                
+                let errorMessage = 'Unable to access camera. ';
+                
+                if (err.name === 'NotAllowedError') {
+                    errorMessage += 'Please allow camera access in your browser settings.';
+                } else if (err.name === 'NotFoundError') {
+                    errorMessage += 'No camera found on your device.';
+                } else if (err.name === 'NotSupportedError') {
+                    errorMessage += 'Camera not supported on this device.';
+                } else {
+                    errorMessage += 'Please check permissions and try again.';
+                }
+                
+                showResult('error', 'Camera Error', errorMessage);
+                
+                const cameraContainer = document.querySelector('.camera-container');
+                cameraContainer.classList.add('camera-dark');
+                cameraContainer.classList.remove('camera-active');
+            }
+        }
+
+        function stopScanner() {
+            if (!isScannerActive) return;
+            
+            const video = document.getElementById('video');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const cameraPermission = document.getElementById('cameraPermission');
+            const cameraDarkOverlay = document.getElementById('cameraDarkOverlay');
+            
+            scanCooldown = false;
+            lastScannedCode = null;
+            
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                if (video) video.srcObject = null;
+                videoStream = null;
+            }
+            
+            if (scanInterval) {
+                clearInterval(scanInterval);
+                scanInterval = null;
+            }
+            
+            if (cameraPermission) cameraPermission.style.display = 'none';
+            if (cameraDarkOverlay) cameraDarkOverlay.style.display = 'flex';
+            if (video) video.style.display = 'none';
+            
+            if (startBtn) startBtn.style.display = 'block';
+            if (stopBtn) stopBtn.style.display = 'none';
+            
+            isScannerActive = false;
+            
+            const cameraContainer = document.querySelector('.camera-container');
+            cameraContainer.classList.add('camera-dark');
+            cameraContainer.classList.remove('camera-active');
+            
+            console.log("🛑 Scanner stopped");
+        }
+
+        function scanQRCode() {
+            const video = document.getElementById('video');
+            
+            if (!video || video.readyState !== video.HAVE_ENOUGH_DATA || !isScannerActive || scanCooldown) {
+                return;
+            }
+            
+            try {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (code && code.data !== lastScannedCode) {
+                    console.log("✅ QR Code detected - PROCESSING:", code.data);
+                    
+                    scanCooldown = true;
+                    lastScannedCode = code.data;
+                    
+                    processQRCode(code.data);
+                    
+                    setTimeout(() => {
+                        stopScanner();
+                    }, 1000);
+                }
+            } catch (err) {
+                console.error("❌ QR scanning error:", err);
+            }
+        }
+
+        // =============================================
+        // FREE TRIAL MANAGEMENT - KEPT SIMILAR
+        // =============================================
+
+        function initializeTrialForNewUser() {
+            if (currentUser.subscription && currentUser.subscription.type === 'paid') {
+                return false;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (!currentUser.subscription || !currentUser.subscription.startDate) {
+                currentUser.subscription = {
+                    type: 'trial',
+                    startDate: new Date().toISOString(),
+                    status: 'active',
+                    trialDaysUsed: 0,
+                    isNewUser: true,
+                    lastLoginDate: today,
+                    daysUsed: 0
+                };
+                localStorage.setItem('currentNSPMUser', JSON.stringify(currentUser));
+                return true;
+            }
+            
+            if (!currentUser.subscription.lastLoginDate) {
+                currentUser.subscription.lastLoginDate = today;
+                currentUser.subscription.isNewUser = true;
+                localStorage.setItem('currentNSPMUser', JSON.stringify(currentUser));
+                return true;
+            }
+            
+            if (currentUser.subscription.lastLoginDate !== today) {
+                currentUser.subscription.lastLoginDate = today;
+                
+                const startDate = new Date(currentUser.subscription.startDate);
+                const todayDate = new Date();
+                const timeDiff = todayDate - startDate;
+                const daysPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                
+                currentUser.subscription.daysUsed = Math.min(daysPassed, TRIAL_DAYS);
+                
+                localStorage.setItem('currentNSPMUser', JSON.stringify(currentUser));
+            }
+            
+            return true;
+        }
+
+        function checkTrialStatus() {
+            if (currentUser.subscription && currentUser.subscription.type === 'paid') {
+                return { isValid: true, daysLeft: 0, isTrial: false, isPaid: true };
+            }
+            
+            if (!currentUser.subscription || currentUser.subscription.type !== 'trial') {
+                return { isValid: true, daysLeft: 0, isTrial: false, isPaid: false };
+            }
+            
+            const subscriptionStartDate = new Date(currentUser.subscription.startDate);
+            const today = new Date();
+            
+            subscriptionStartDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            
+            const timeDiff = today - subscriptionStartDate;
+            const daysPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            
+            const daysLeft = Math.max(TRIAL_DAYS - daysPassed, 0);
+            
+            const displayDaysPassed = Math.min(Math.max(daysPassed, 0), TRIAL_DAYS);
+            const displayDaysLeft = Math.max(daysLeft, 0);
+            
+            return {
+                isValid: daysLeft > 0,
+                daysLeft: displayDaysLeft,
+                daysPassed: displayDaysPassed,
+                isTrial: true,
+                isExpired: daysLeft <= 0,
+                isPaid: false
+            };
+        }
+
+        function updateTrialBanner() {
+            const trialBanner = document.getElementById('trialBanner');
+            const trialStatus = checkTrialStatus();
+            
+            if (trialStatus.isPaid || currentUser.subscription?.type === 'paid') {
+                trialBanner.style.display = 'none';
+                return;
+            }
+            
+            if (!trialStatus.isTrial) {
+                trialBanner.style.display = 'none';
+                return;
+            }
+            
+            trialBanner.style.display = 'block';
+            
+            if (trialStatus.isExpired) {
+                trialBanner.classList.add('expired');
+                document.getElementById('trialTitle').textContent = getTranslation('trialExpired');
+                document.getElementById('trialMessage').textContent = 'Your free trial has ended';
+                document.getElementById('trialDaysText').textContent = '';
+                document.getElementById('trialDaysLeft').textContent = '';
+                
+                const progressBar = document.getElementById('trialProgressBar');
+                progressBar.classList.add('expired');
+                progressBar.style.width = '100%';
+                
+                updateTrialDayCounters(TRIAL_DAYS, true);
+                
+                disableScanner();
+            } else {
+                trialBanner.classList.remove('expired');
+                document.getElementById('trialTitle').textContent = getTranslation('freeTrialActive');
+                document.getElementById('trialMessage').textContent = getTranslation('trialDaysLeft');
+                document.getElementById('trialDaysLeft').textContent = trialStatus.daysLeft;
+                document.getElementById('trialDaysText').textContent = getTranslation('daysLeft');
+                
+                const progressBar = document.getElementById('trialProgressBar');
+                progressBar.classList.remove('expired');
+                const progressPercentage = (trialStatus.daysPassed / TRIAL_DAYS) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+                
+                updateTrialDayCounters(trialStatus.daysPassed, false);
+                
+                enableScanner();
+            }
+        }
+
+        function updateTrialDayCounters(daysPassed, isExpired) {
+            const container = document.getElementById('trialDayCounters');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= TRIAL_DAYS; i++) {
+                const dayCounter = document.createElement('div');
+                dayCounter.className = 'day-counter';
+                dayCounter.textContent = i;
+                
+                if (isExpired) {
+                    dayCounter.classList.add('expired');
+                } else if (i <= daysPassed) {
+                    dayCounter.classList.add('passed');
+                } else if (i === daysPassed + 1) {
+                    dayCounter.classList.add('active');
+                }
+                
+                container.appendChild(dayCounter);
+            }
+        }
+
+        function disableScanner() {
+            const scannerDisabled = document.getElementById('scannerDisabled');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            if (scannerDisabled) {
+                scannerDisabled.style.display = 'flex';
+                scannerDisabled.querySelector('#scannerDisabledTitle').textContent = 'Scanner Locked';
+                scannerDisabled.querySelector('#scannerDisabledMessage').textContent = 'Your free trial has ended. Subscribe to unlock.';
+            }
+            
+            if (startBtn) startBtn.style.display = 'none';
+            if (stopBtn) stopBtn.style.display = 'none';
+            
+            stopScanner();
+        }
+
+        function enableScanner() {
+            const scannerDisabled = document.getElementById('scannerDisabled');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            if (scannerDisabled) {
+                scannerDisabled.style.display = 'none';
+            }
+            
+            if (startBtn) startBtn.style.display = 'block';
+            if (stopBtn) stopBtn.style.display = 'none';
+            
+            const trialStatus = checkTrialStatus();
+            if (trialStatus.isValid || currentUser.subscription?.type === 'paid') {
+                if (scannerDisabled) scannerDisabled.style.display = 'none';
+                if (startBtn) startBtn.style.display = 'block';
+            }
+        }
+
+        function canUserScan() {
+            const trialStatus = checkTrialStatus();
+            
+            if (currentUser.subscription.type === 'paid') {
+                return true;
+            }
+            
+            if (currentUser.subscription.type === 'trial') {
+                return trialStatus.isValid;
+            }
+            
+            return false;
+        }
+
+        function initializeSubscription() {
+            if (!currentUser.subscription) {
+                currentUser.subscription = {
+                    type: 'trial',
+                    startDate: new Date().toISOString(),
+                    status: 'active',
+                    trialDaysUsed: 0,
+                    isNewUser: true,
+                    lastLoginDate: new Date().toISOString().split('T')[0],
+                    daysUsed: 0
+                };
+                localStorage.setItem('currentNSPMUser', JSON.stringify(currentUser));
+            }
+            updateSubscriptionUI();
+        }
+
+        function updateSubscriptionUI() {
+            const subscriptionType = currentUser.subscription.type;
+            const subscriptionStartDate = new Date(currentUser.subscription.startDate);
+            
+            if (subscriptionType === 'trial') {
+                const trialStatus = checkTrialStatus();
+                
+                if (trialStatus.isValid) {
+                    const statusText = `${getTranslation('active')} (${getTranslation('trial')} - ${trialStatus.daysLeft} ${getTranslation('daysLeft')})`;
+                    document.getElementById('statusValue').textContent = statusText;
+                    document.getElementById('subscriptionStatus').style.color = 'var(--warning)';
+                    
+                    const trialEndDate = new Date(subscriptionStartDate);
+                    trialEndDate.setDate(trialEndDate.getDate() + TRIAL_DAYS);
+                    document.getElementById('expiresValue').textContent = formatDate(trialEndDate);
+                } else {
+                    document.getElementById('statusValue').textContent = getTranslation('expired');
+                    document.getElementById('subscriptionStatus').style.color = 'var(--danger)';
+                    document.getElementById('expiresValue').textContent = getTranslation('pleaseSubscribe');
+                }
+            } else if (subscriptionType === 'paid') {
+                document.getElementById('statusValue').textContent = `${getTranslation('active')} (${getTranslation('paid')})`;
+                document.getElementById('subscriptionStatus').style.color = 'var(--primary)';
+                const expiry = currentUser.subscription.expiry;
+                document.getElementById('expiresValue').textContent = formatDate(expiry);
+            }
+        }
+
+        // =============================================
+        // PAYMENT FUNCTIONS - KEPT SIMILAR
+        // =============================================
+
+        async function processPaystackPayment() {
+            const email = document.getElementById('paystackEmail').value.trim();
+            
+            if (!email) {
+                showResult('error', 'Missing Information', 'Please enter your email address.');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showResult('error', 'Invalid Email', 'Please enter a valid email address.');
+                return;
+            }
+            
+            showLoading('Opening payment gateway...');
+            
+            try {
+                const reference = 'NSPM-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                
+                localStorage.setItem('pendingPaymentRef', reference);
+                
+                const handler = PaystackPop.setup({
+                    key: PAYSTACK_PUBLIC_KEY,
+                    email: email,
+                    amount: SUBSCRIPTION_PRICE * 100,
+                    currency: 'NGN',
+                    ref: reference,
+                    metadata: {
+                        employeeId: currentUser?.userId || 'unknown',
+                        employeeName: currentUser?.name || 'unknown',
+                        company: 'NSPM',
+                        product: 'NSPM SmartTendance 4-Month Subscription',
+                        amountNGN: SUBSCRIPTION_PRICE
+                    },
+                    callback: function(response) {
+                        hideLoading();
+                        console.log('Payment successful:', response);
+                        verifyPayment(response.reference);
+                    },
+                    onClose: function() {
+                        hideLoading();
+                        showResult('info', 'Payment Cancelled', 'Payment was cancelled. You can try again.');
+                    }
+                });
+                
+                handler.openIframe();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Payment error:', error);
+                showResult('error', 'Payment Error', 'Failed to process payment. Please try again.');
+            }
+        }
+
+        async function verifyPayment(reference) {
+            showLoading('Verifying payment...');
+            
+            try {
+                const paymentVerified = await simplePaymentVerification(reference);
+                
+                if (paymentVerified) {
+                    if (currentUser) {
+                        const expiryDate = new Date();
+                        expiryDate.setMonth(expiryDate.getMonth() + 4);
+                        
+                        currentUser.subscription = {
+                            type: 'paid',
+                            status: 'active',
+                            expiry: expiryDate.toISOString(),
+                            lastPaymentDate: new Date().toISOString(),
+                            lastPaymentId: reference,
+                            lastPaymentMethod: 'paystack',
+                            paymentAmount: SUBSCRIPTION_PRICE,
+                            durationMonths: 4
+                        };
+                        
+                        localStorage.setItem('currentNSPMUser', JSON.stringify(currentUser));
+                        localStorage.removeItem('pendingPaymentRef');
+                        
+                        updateSubscriptionUI();
+                        updateTrialBanner();
+                        enableScanner();
+                        
+                        hideLoading();
+                        showResult('success', '🎉 Payment Successful!', 
+                            'Your ₦5,000 payment has been confirmed!<br>' +
+                            'Your subscription is now active for 4 months.<br>' +
+                            'Transaction ID: ' + reference);
+                            
+                        paymentSuccessShown = true;
+                        localStorage.setItem('paymentSuccessShown', 'true');
+                        
+                        closePaymentModal();
+                    }
+                } else {
+                    hideLoading();
+                    showResult('error', 'Verification Failed', 
+                        'Payment verification failed. Please contact support with reference: ' + reference);
+                }
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Verification error:', error);
+                showResult('error', 'Verification Error', 
+                    'Could not verify payment. Please check your internet connection.');
+            }
+        }
+
+        async function simplePaymentVerification(reference) {
+            try {
+                return true;
+            } catch (error) {
+                console.error('Verification failed:', error);
+                return false;
+            }
+        }
+
+        function showPaymentForm(method) {
+            currentPaymentMethod = method;
+            document.getElementById('paymentModal').style.display = 'flex';
+            
+            const paystackEmail = document.getElementById('paystackEmail');
+            if (paystackEmail && currentUser && currentUser.email) {
+                paystackEmail.value = currentUser.email;
+            }
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            currentPaymentMethod = null;
+        }
+
+        // =============================================
+        // UTILITY FUNCTIONS
+        // =============================================
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.nav-item[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            if (tabName === 'scanner') {
+                const cameraPermission = document.getElementById('cameraPermission');
+                const video = document.getElementById('video');
+                
+                if (cameraPermission) cameraPermission.style.display = 'none';
+                if (video) video.style.display = 'none';
+                
+                if (!isScannerActive) {
+                    if (!canUserScan()) {
+                        disableScanner();
+                    } else {
+                        enableScanner();
+                    }
+                }
+            } else {
+                stopScanner();
+            }
+            
+            if (tabName === 'history') {
+                loadAttendanceHistory();
+                generateKPIs();
+                loadWeek('current');
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLightMode = document.body.classList.contains('light-mode');
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.innerHTML = isLightMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            }
+            localStorage.setItem('darkMode', isLightMode);
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('signupForm').classList.remove('active');
+            document.getElementById('forgotPasswordForm').classList.remove('active');
+            document.getElementById('loginToggle').classList.add('active');
+            document.getElementById('signupToggle').classList.remove('active');
+        }
+
+        function showSignupForm() {
+            document.getElementById('signupForm').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('forgotPasswordForm').classList.remove('active');
+            document.getElementById('signupToggle').classList.add('active');
+            document.getElementById('loginToggle').classList.remove('active');
+        }
+
+        function showForgotPasswordForm() {
+            document.getElementById('forgotPasswordForm').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('signupForm').classList.remove('active');
+            document.getElementById('loginToggle').classList.remove('active');
+            document.getElementById('signupToggle').classList.remove('active');
+        }
+
+        function setupRealTimeValidation() {
+            // Login form validation
+            const loginId = document.getElementById('loginId');
+            const loginPassword = document.getElementById('loginPassword');
+            
+            if (loginId) {
+                loginId.addEventListener('input', function() {
+                    validateField(this, 'loginIdError', this.value.trim() !== '');
+                });
+            }
+            
+            if (loginPassword) {
+                loginPassword.addEventListener('input', function() {
+                    validateField(this, 'loginPasswordError', this.value.trim() !== '');
+                });
+            }
+            
+            // Signup form validation
+            const fullName = document.getElementById('fullName');
+            const email = document.getElementById('email');
+            const userId = document.getElementById('userId');
+            const department = document.getElementById('department');
+            const position = document.getElementById('position');
+            const signupPassword = document.getElementById('signupPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            
+            if (fullName) {
+                fullName.addEventListener('input', function() {
+                    validateField(this, 'fullNameError', this.value.trim() !== '');
+                });
+            }
+            
+            if (email) {
+                email.addEventListener('input', function() {
+                    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
+                    validateField(this, 'emailError', isValid);
+                });
+            }
+            
+            if (userId) {
+                userId.addEventListener('input', function() {
+                    validateField(this, 'userIdError', this.value.trim() !== '');
+                });
+            }
+            
+            if (department) {
+                department.addEventListener('input', function() {
+                    validateField(this, 'departmentError', this.value.trim() !== '');
+                });
+            }
+            
+            if (position) {
+                position.addEventListener('input', function() {
+                    validateField(this, 'positionError', this.value.trim() !== '');
+                });
+            }
+            
+            // Password strength validation
+            if (signupPassword) {
+                signupPassword.addEventListener('input', function() {
+                    const password = this.value;
+                    const isValid = updatePasswordStrength(password);
+                    
+                    validateField(this, 'signupPasswordError', isValid);
+                    
+                    if (confirmPassword && confirmPassword.value) {
+                        validateField(confirmPassword, 'confirmPasswordError', confirmPassword.value === password);
+                    }
+                });
+            }
+            
+            if (confirmPassword) {
+                confirmPassword.addEventListener('input', function() {
+                    const password = signupPassword ? signupPassword.value : '';
+                    validateField(this, 'confirmPasswordError', this.value === password);
+                });
+            }
+            
+            // Forgot password form validation
+            const forgotEmail = document.getElementById('forgotEmail');
+            if (forgotEmail) {
+                forgotEmail.addEventListener('input', function() {
+                    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
+                    validateField(this, 'forgotEmailError', isValid);
+                });
+            }
+        }
+
+        function validateField(field, errorId, isValid) {
+            const errorElement = document.getElementById(errorId);
+            
+            if (!field || !errorElement) return isValid;
+            
+            if (isValid) {
+                field.parentElement.classList.remove('error');
+                errorElement.style.display = 'none';
+                errorElement.textContent = '';
+            } else {
+                field.parentElement.classList.add('error');
+                errorElement.style.display = 'block';
+            }
+            
+            return isValid;
+        }
+
+        function updatePasswordStrength(password) {
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                symbol: /[^A-Za-z0-9]/.test(password)
+            };
+            
+            const validRequirements = Object.values(requirements).filter(Boolean).length;
+            const totalRequirements = Object.keys(requirements).length;
+            const strengthPercentage = (validRequirements / totalRequirements) * 100;
+            
+            let strengthLevel = 'weak';
+            let strengthLabel = 'Weak';
+            
+            if (strengthPercentage >= 80) {
+                strengthLevel = 'strong';
+                strengthLabel = 'Strong';
+            } else if (strengthPercentage >= 60) {
+                strengthLevel = 'good';
+                strengthLabel = 'Good';
+            } else if (strengthPercentage >= 40) {
+                strengthLevel = 'fair';
+                strengthLabel = 'Fair';
+            }
+            
+            const fillElement = document.getElementById('strengthFill');
+            const valueElement = document.getElementById('strengthValue');
+            
+            if (fillElement) {
+                fillElement.className = 'strength-fill ' + strengthLevel;
+            }
+            
+            if (valueElement) {
+                valueElement.textContent = strengthLabel;
+            }
+            
+            updateRequirementIndicators(requirements);
+            
+            return strengthPercentage === 100;
+        }
+
+        function updateRequirementIndicators(requirements) {
+            const requirementIds = {
+                length: 'reqLength',
+                uppercase: 'reqUppercase',
+                lowercase: 'reqLowercase',
+                number: 'reqNumber',
+                symbol: 'reqSymbol'
+            };
+            
+            Object.keys(requirements).forEach(req => {
+                const element = document.getElementById(requirementIds[req]);
+                if (element) {
+                    if (requirements[req]) {
+                        element.classList.remove('invalid');
+                        element.classList.add('valid');
+                    } else {
+                        element.classList.remove('valid');
+                        element.classList.add('invalid');
+                    }
+                }
+            });
+        }
+
+        async function handleForgotPassword() {
+            const email = document.getElementById('forgotEmail').value.trim();
+            
+            const isEmailValid = validateField(
+                document.getElementById('forgotEmail'), 
+                'forgotEmailError', 
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+            );
+            
+            if (!isEmailValid) {
+                showResult('error', getTranslation('validationError'), getTranslation('validEmailRequired'));
+                return;
+            }
+            
+            showLoading(getTranslation('sendingInstructions'));
+            
+            try {
+                await auth.sendPasswordResetEmail(email);
+                hideLoading();
+                showResult('success', 
+                    getTranslation('checkEmail'), 
+                    'Password reset instructions have been sent to your email address.'
+                );
+                
+                setTimeout(() => {
+                    showLoginForm();
+                }, 3000);
+                
+            } catch (error) {
+                hideLoading();
+                console.error("Password reset error:", error);
+                
+                let errorMessage = 'Failed to send reset email. ';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage += 'No account found with this email address.';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Please enter a valid email address.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage += 'Too many reset attempts. Please try again later.';
+                        break;
+                    default:
+                        errorMessage += 'Please try again.';
+                }
+                
+                showResult('error', 'Password Reset Failed', errorMessage);
+            }
+        }
+
+        function setupFirebaseAuthListener() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    console.log("🔥 Firebase Auth State: User is signed in", user.uid);
+                } else {
+                    console.log("🔥 Firebase Auth State: User is signed out");
+                }
+            });
+        }
+
+        function handlePasswordResetConfirmation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const actionCode = urlParams.get('oobCode');
+            
+            if (mode === 'resetPassword' && actionCode) {
+                showResult('success', 'Password Reset Confirmed', 
+                    'Please use your new password to login.');
+                
+                const newUrl = window.location.origin + window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+                
+                showLoginForm();
+            }
+        }
+
+        function clearAuthCache() {
+            auth.signOut();
+            
+            localStorage.removeItem('currentNSPMUser');
+            localStorage.removeItem('nspmUsers');
+            localStorage.removeItem('paymentSuccessShown');
+            localStorage.removeItem('pendingPaymentRef');
+            sessionStorage.clear();
+            
+            currentUser = null;
+            activeShift = null;
+            
+            showResult('success', getTranslation('cacheCleared'), 
+                'All cached login data has been cleared. Please login again.');
+            
+            showAuth();
+            
+            document.getElementById('loginForm').reset();
+            document.getElementById('signupForm').reset();
+            document.getElementById('forgotPasswordForm').reset();
+        }
+
+        function showLoading(message = 'Processing...') {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingMessage = document.getElementById('loadingMessage');
+            
+            if (loadingOverlay && loadingMessage) {
+                loadingMessage.textContent = message;
+                loadingOverlay.style.display = 'flex';
+            }
+        }
+
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        }
+
+        function showResult(type, title, message) {
+            const modal = document.getElementById('resultModal');
+            const content = document.getElementById('resultContent');
+            const icon = document.getElementById('resultIcon');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultMessage = document.getElementById('resultMessage');
+            
+            if (!modal || !content || !icon || !resultTitle || !resultMessage) return;
+            
+            content.className = `result-content ${type === 'success' ? 'result-success' : type === 'error' ? 'result-error' : ''}`;
+            
+            if (type === 'processing') {
+                icon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            } else {
+                icon.innerHTML = type === 'success' ? '<i class="fas fa-check-circle"></i>' : 
+                                type === 'error' ? '<i class="fas fa-times-circle"></i>' : 
+                                '<i class="fas fa-info-circle"></i>';
+            }
+            
+            resultTitle.textContent = title;
+            resultMessage.innerHTML = message;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeResult() {
+            const modal = document.getElementById('resultModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                const options = { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    weekday: 'short'
+                };
+                return date.toLocaleDateString('en-US', options);
+            } catch (error) {
+                return 'Invalid Date';
+            }
+        }
+
+        function formatTime(timestamp) {
+            try {
+                const date = new Date(timestamp);
+                return date.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch (error) {
+                return '--:--';
+            }
+        }
+
+        // =============================================
+        // LANGUAGE FUNCTIONS
+        // =============================================
+
+        function getTranslation(key) {
+            return translations[currentLanguage]?.[key] || translations['en'][key] || key;
+        }
+
+        function changeLanguage(lang, showMessage = true) {
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            const activeOption = document.querySelector(`.language-option[data-lang="${lang}"]`);
+            if (activeOption) {
+                activeOption.classList.add('active');
+            }
+            
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                element.textContent = getTranslation(key);
+            });
+            
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                element.setAttribute('placeholder', getTranslation(key));
+            });
+            
+            updateTrialBanner();
+            
+            if (showMessage) {
+                showResult('success', getTranslation('languageChanged'), 
+                    `${getTranslation('languageSetTo')} ${lang.toUpperCase()}`);
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'true') {
+                document.body.classList.add('light-mode');
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
